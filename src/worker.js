@@ -46,7 +46,7 @@ async function initDB(env) {
     if (results.length === 0) {
       console.log('开始创建数据库表...');
       
-      // 创建文章表（不使用默认值，使用程序生成时间）
+      // 创建文章表（每个语句分开执行）
       await env.DB.exec(`
         CREATE TABLE posts (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +64,6 @@ async function initDB(env) {
         )
       `);
 
-      // 创建分类表
       await env.DB.exec(`
         CREATE TABLE categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,7 +73,6 @@ async function initDB(env) {
         )
       `);
 
-      // 创建设置表
       await env.DB.exec(`
         CREATE TABLE settings (
           id INTEGER PRIMARY KEY,
@@ -177,25 +175,33 @@ async function handleAPI(request, env, path) {
     return json(results);
   }
 
-  if (path === '/api/post/' && method === 'GET') {
-    const slug = new URL(request.url).searchParams.get('slug');
-    if (!slug) return json({ error: '缺少 slug' }, 400);
+  try {
+    if (path === '/api/post/' && method === 'GET') {
+      const slug = new URL(request.url).searchParams.get('slug');
+      if (!slug) return json({ error: '缺少 slug' }, 400);
 
-    const { results } = await env.DB.prepare(
-      "SELECT * FROM posts WHERE slug=? AND status='published'"
-    ).bind(slug).all();
+      const { results } = await env.DB.prepare(
+        "SELECT * FROM posts WHERE slug=? AND status='published'"
+      ).bind(slug).all();
 
-    if (results.length === 0) {
-      return json({ error: '文章不存在' }, 404);
+      if (results.length === 0) {
+        return json({ error: '文章不存在' }, 404);
+      }
+
+      // 更新浏览次数
+      await env.DB.prepare(
+        "UPDATE posts SET view_count = view_count + 1 WHERE id=?"
+      ).bind(results[0].id).run();
+      
+      return json(results[0]);
     }
-
-    // 更新浏览次数
-    await env.DB.prepare(
-      "UPDATE posts SET view_count = view_count + 1 WHERE id=?"
-    ).bind(results[0].id).run();
-
-    return json(results[0]);
+  } catch (e) {
+    console.error('API 错误:', e);
+    return json({ error: e.message }, 500);
   }
+
+  return json({ error: '未找到接口' }, 404);
+}
 
   if (path === '/api/categories' && method === 'GET') {
     const { results } = await env.DB.prepare(
