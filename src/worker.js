@@ -316,7 +316,8 @@ async function handleAPI(request, env, path) {
       const arrayBuffer = await file.arrayBuffer();
       const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
       const contentType = file.type;
-      const filename = `${Date.now()}-${file.name}`;
+      const ext = contentType.split('/')[1] || 'jpg';
+      const filename = generateRandomFilename() + '.' + ext;
       if (env.R2) {
         await env.R2.put(filename, arrayBuffer, { httpMetadata: { contentType } });
         return json({ url: `/images/${filename}` });
@@ -379,6 +380,16 @@ async function handleImage(request, env, path) {
   return new Response('Not Found', { status: 404 });
 }
 
+// 生成12位随机文件名
+function generateRandomFilename() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 async function uploadImage(env, base64Data, prefix) {
   try {
     const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
@@ -391,7 +402,8 @@ async function uploadImage(env, base64Data, prefix) {
       arrayBuffer[i] = data.charCodeAt(i);
     }
 
-    const filename = `${prefix}-${Date.now()}.${contentType.split('/')[1]}`;
+    const ext = contentType.split('/')[1] || 'jpg';
+    const filename = generateRandomFilename() + '.' + ext;
 
     if (env.R2) {
       await env.R2.put(filename, arrayBuffer, {
@@ -409,6 +421,32 @@ async function uploadImage(env, base64Data, prefix) {
 
 // ==================== 前台处理 ====================
 async function handleFrontend(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  
+  // 文章详情页
+  if (path.startsWith('/post/')) {
+    const slug = path.replace('/post/', '');
+    await initDB(env);
+    
+    try {
+      const { results } = await env.DB.prepare(
+        "SELECT * FROM posts WHERE slug=? AND status='published'"
+      ).bind(slug).all();
+      
+      if (results.length === 0) {
+        return new Response('文章不存在', { status: 404 });
+      }
+      
+      const post = results[0];
+      return new Response(getPostHTML(post), {
+        headers: { 'Content-Type': 'text/html;charset=utf-8' }
+      });
+    } catch (e) {
+      return new Response('加载失败: ' + e.message, { status: 500 });
+    }
+  }
+  
   return new Response(getFrontendHTML(), {
     headers: { 'Content-Type': 'text/html;charset=utf-8' }
   });
@@ -433,6 +471,55 @@ function generateSlug(title) {
 }
 
 // ==================== 前端 HTML ====================
+
+// 文章详情页 HTML
+function getPostHTML(post) {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${post.title}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+    header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 40px 20px; text-align: center; }
+    header h1 { font-size: 2em; margin-bottom: 10px; }
+    header a { color: white; text-decoration: none; }
+    main { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    .post-cover { width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 30px; }
+    .post-content { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); line-height: 1.8; }
+    .post-content h1, .post-content h2, .post-content h3 { margin: 1.5em 0 0.5em; }
+    .post-content p { margin: 1em 0; }
+    .post-meta { color: #999; font-size: 0.9em; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+    footer { text-align: center; padding: 40px 20px; color: #999; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="/">博客</a></h1>
+  </header>
+  <main>
+    ${post.cover_image ? `<img class="post-cover" src="${post.cover_image}" alt="${post.title}">` : ''}
+    <article class="post-content">
+      <h1>${post.title}</h1>
+      <div class="post-meta">
+        <span>分类: ${post.category}</span> | 
+        <span>阅读: ${post.view_count}</span> | 
+        <span>${new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
+      </div>
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+      <div>${post.content.replace(/
+/g, '<br>')}</div>
+    </article>
+  </main>
+  <footer>
+    &copy; 2026 我的博客. All rights reserved.
+  </footer>
+</body>
+</html>`;
+}
+
 function getFrontendHTML() {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
