@@ -102,17 +102,17 @@ async function initDB(env) {
       `).bind(
         '欢迎使用 cloudflare-light-blog',
         'welcome',
-        '# 欢迎
-
-这是一个基于 Cloudflare Workers + D1 + R2 构建的轻量级博客系统。
-
-## 功能特点
-
-- ✅ 简洁的后台管理
-- ✅ 支持文章封面图
-- ✅ 高速部署
-- ✅ 免费额度充足
-
+        '# 欢迎\
+\
+这是一个基于 Cloudflare Workers + D1 + R2 构建的轻量级博客系统。\
+\
+## 功能特点\
+\
+- ✅ 简洁的后台管理\
+- ✅ 支持文章封面图\
+- ✅ 高速部署\
+- ✅ 免费额度充足\
+\
 开始你的博客之旅吧！',
         '这是一个基于 Cloudflare Workers 构建的轻量级博客系统...',
         '',
