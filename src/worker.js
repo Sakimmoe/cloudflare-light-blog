@@ -775,7 +775,7 @@ function getAdminHTML() {
         const posts = ref([]);
         const showModal = ref(false);
         const editingId = ref(null);
-        const form = reactive({ title: '', category: '', status: 'draft', tags: '', excerpt: '', content: '', cover_image: '' });
+        const form = ref({ title: '', category: '', status: 'draft', tags: '', excerpt: '', content: '', cover_image: '' });
         const coverPreview = ref('');
         const toast = ref('');
 
@@ -810,22 +810,14 @@ function getAdminHTML() {
 
         const openAdd = () => {
           editingId.value = null;
-          form = { title: '', category: '', status: 'draft', tags: '', excerpt: '', content: '', cover_image: '' };
+          form.value = { title: '', category: '', status: 'draft', tags: '', excerpt: '', content: '', cover_image: '' };
           coverPreview.value = '';
           showModal.value = true;
         };
 
         const openEdit = (post) => {
           editingId.value = post.id;
-          form = { 
-            title: post.title || '',
-            content: post.content || '',
-            excerpt: post.excerpt || '',
-            category: post.category || '',
-            tags: post.tags || '',
-            status: post.status || 'draft',
-            cover_image: post.cover_image || ''
-          };
+          form.value = JSON.parse(JSON.stringify(post));
           coverPreview.value = post.cover_image || '';
           showModal.value = true;
         };
@@ -863,13 +855,13 @@ function getAdminHTML() {
             uploadProgress.value = 100;
             
             if (data.url) {
-              form.cover_image = data.url;
+              form.value.cover_image = data.url;
               coverPreview.value = data.url;
             } else {
               // 如果上传失败，使用 base64
               const reader = new FileReader();
               reader.onload = (e) => {
-                form.cover_image = e.target.result;
+                form.value.cover_image = e.target.result;
                 coverPreview.value = e.target.result;
               };
               reader.readAsDataURL(file);
@@ -879,7 +871,7 @@ function getAdminHTML() {
             // 降级为 base64
             const reader = new FileReader();
             reader.onload = (e) => {
-              form.cover_image = e.target.result;
+              form.value.cover_image = e.target.result;
               coverPreview.value = e.target.result;
             };
             reader.readAsDataURL(file);
@@ -894,7 +886,7 @@ function getAdminHTML() {
         const savePost = async () => {
           try {
             if (editingId.value) {
-              const res = await api('/api/admin/post?id=' + editingId.value, { method: 'PUT', data: form });
+              const res = await api('/api/admin/post?id=' + editingId.value, { method: 'PUT', data: form.value });
               if (res.data.success) {
                 showModal.value = false;
                 loadPosts();
@@ -903,7 +895,7 @@ function getAdminHTML() {
                 alert('保存失败: ' + (res.data.error || '未知错误'));
               }
             } else {
-              const res = await api('/api/admin/post', { method: 'POST', data: form });
+              const res = await api('/api/admin/post', { method: 'POST', data: form.value });
               if (res.data.success) {
                 showModal.value = false;
                 loadPosts();
