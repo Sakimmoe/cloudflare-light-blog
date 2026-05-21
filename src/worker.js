@@ -1063,7 +1063,7 @@ function getAdminHTML() {
           <a href="#" :class="{active: currentPage==='posts'}" @click.prevent="currentPage='posts'">
             <span class="icon">📝</span> 文章管理
           </a>
-          <a href="#" :class="{active: currentPage==='new'}" @click.prevent="currentPage='new';openAdd()">
+          <a href="#" :class="{active: currentPage==='new'}" @click.prevent="openAdd()">
             <span class="icon">✏️</span> 新建文章
           </a>
           <a href="#" :class="{active: currentPage==='category'}" @click.prevent="currentPage='category'">
@@ -1088,24 +1088,131 @@ function getAdminHTML() {
             <h2>文章管理</h2>
             <button class="btn" @click="openAdd()">新建文章</button>
           </div>
-          <table>
-            <thead>
-              <tr><th>标题</th><th>分类</th><th>状态</th><th>浏览</th><th>日期</th><th>操作</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="post in posts" :key="post.id">
-                <td>{{ post.title }}</td>
-                <td>{{ post.category }}</td>
-                <td><span :class="'status ' + post.status">{{ post.status === 'published' ? '已发布' : '草稿' }}</span></td>
-                <td>{{ post.view_count }}</td>
-                <td>{{ new Date(post.created_at).toLocaleDateString('zh-CN') }}</td>
-                <td class="actions">
-                  <button class="edit" @click="openEdit(post)">编辑</button>
+          <div v-for="post in posts" :key="post.id" style="margin-bottom:16px">
+            <div class="card" style="margin-bottom:0">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <h3 style="color:#794f27;margin-bottom:4px">{{ post.title }}</h3>
+                  <div style="display:flex;gap:12px;font-size:0.85em;color:#9f927d">
+                    <span>{{ post.category }}</span>
+                    <span :class="'status ' + post.status" style="padding:2px 10px">{{ post.status === 'published' ? '已发布' : '草稿' }}</span>
+                    <span>{{ post.view_count }} 阅读</span>
+                    <span>{{ new Date(post.created_at).toLocaleDateString('zh-CN') }}</span>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="edit" @click="toggleEdit(post)">{{ editingId === post.id ? '收起' : '编辑' }}</button>
                   <button class="delete" @click="deletePost(post.id)">删除</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+            <!-- 展开编辑区域 -->
+            <div v-if="editingId === post.id" class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0">
+              <div class="form-group">
+                <label>标题</label>
+                <input v-model="form.title" placeholder="文章标题">
+              </div>
+              <div class="form-group">
+                <label>文章密码（可选）</label>
+                <input v-model="form.password" type="password" placeholder="留空则无需密码">
+              </div>
+              <div class="form-group">
+                <label>分类</label>
+                <select v-model="form.category">
+                  <option value="">请选择分类</option>
+                  <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>状态</label>
+                  <select v-model="form.status">
+                    <option value="draft">草稿</option>
+                    <option value="published">已发布</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>标签</label>
+                  <input v-model="form.tags" placeholder="标签1,标签2">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>封面图片</label>
+                <div class="cover-upload" @click="$refs.editFileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+                  <input ref="editFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
+                  <div v-if="!coverPreview"><p style="color:#9f927d">点击或拖拽图片到这里</p></div>
+                  <img v-else :src="coverPreview" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:12px">
+                </div>
+                <div v-if="coverPreview" style="display:flex;gap:10px;margin-top:10px">
+                  <button @click="$refs.editFileInput.click()" style="padding:8px 16px;background:#19c8b9;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">更换图片</button>
+                  <button @click="deleteCover" style="padding:8px 16px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除图片</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>内容</label>
+                <textarea v-model="form.content" placeholder="文章内容" rows="10"></textarea>
+              </div>
+              <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn btn-cancel" @click="editingId=null">取消</button>
+                <button class="btn" @click="savePost">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 新建文章 -->
+        <div v-if="currentPage==='new'">
+          <div class="page-header">
+            <h2>{{ editingId ? '编辑文章' : '新建文章' }}</h2>
+            <button class="btn btn-cancel" @click="currentPage='posts';editingId=null">返回列表</button>
+          </div>
+          <div class="card">
+            <div class="form-group">
+              <label>标题</label>
+              <input v-model="form.title" placeholder="文章标题">
+            </div>
+            <div class="form-group">
+              <label>文章密码（可选）</label>
+              <input v-model="form.password" type="password" placeholder="留空则无需密码">
+            </div>
+            <div class="form-group">
+              <label>分类</label>
+              <select v-model="form.category" required>
+                <option value="">请选择分类</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>状态</label>
+                <select v-model="form.status">
+                  <option value="draft">草稿</option>
+                  <option value="published">已发布</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>标签（逗号分隔）</label>
+                <input v-model="form.tags" placeholder="标签1,标签2">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>封面图片</label>
+              <div class="cover-upload" @click="$refs.newFileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+                <input ref="newFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
+                <div v-if="!coverPreview"><p style="color:#9f927d">点击或拖拽图片到这里</p></div>
+                <img v-else :src="coverPreview" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:12px">
+              </div>
+              <div v-if="coverPreview" style="display:flex;gap:10px;margin-top:10px">
+                <button @click="$refs.newFileInput.click()" style="padding:8px 16px;background:#19c8b9;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">更换图片</button>
+                <button @click="deleteCover" style="padding:8px 16px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除图片</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>内容</label>
+              <textarea v-model="form.content" placeholder="文章内容" rows="15"></textarea>
+            </div>
+            <button class="btn" @click="savePost" style="width:100%;margin-top:20px">保存文章</button>
+          </div>
         </div>
         
         <!-- 分类管理 -->
@@ -1143,10 +1250,14 @@ function getAdminHTML() {
             </div>
             <div class="form-group">
               <label>个人头像</label>
-              <input type="file" @change="handleAvatar" accept="image/*">
-              <div v-if="settingsForm.site_avatar" style="margin-top:10px;display:flex;align-items:center;gap:12px">
-                <img :src="settingsForm.site_avatar" style="width:64px;height:64px;border-radius:50%;border:3px solid #c4b89e">
-                <button @click="settingsForm.site_avatar=''" style="padding:6px 14px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除</button>
+              <div class="cover-upload" @click="$refs.avatarInput.click()" @dragover.prevent @drop.prevent="handleAvatarDrop">
+                <input ref="avatarInput" type="file" @change="handleAvatar" accept="image/*" style="display:none">
+                <div v-if="!settingsForm.site_avatar"><p style="color:#9f927d">点击或拖拽头像到这里</p></div>
+                <img v-else :src="settingsForm.site_avatar" style="width:80px;height:80px;border-radius:50%;border:3px solid #c4b89e">
+              </div>
+              <div v-if="settingsForm.site_avatar" style="display:flex;gap:10px;margin-top:10px">
+                <button @click="$refs.avatarInput.click()" style="padding:8px 16px;background:#19c8b9;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">更换头像</button>
+                <button @click="settingsForm.site_avatar=''" style="padding:8px 16px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除头像</button>
               </div>
             </div>
             <div class="form-group">
@@ -1177,10 +1288,14 @@ function getAdminHTML() {
             </div>
             <div class="form-group">
               <label>网站图标</label>
-              <input type="file" @change="handleFavicon" accept=".ico,image/*">
-              <div v-if="settingsForm.site_favicon" style="margin-top:10px;display:flex;align-items:center;gap:12px">
-                <img :src="settingsForm.site_favicon" style="width:32px;height:32px">
-                <button @click="settingsForm.site_favicon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:12px">删除</button>
+              <div class="cover-upload" @click="$refs.faviconInput.click()" @dragover.prevent @drop.prevent="handleFaviconDrop">
+                <input ref="faviconInput" type="file" @change="handleFavicon" accept=".ico,image/*" style="display:none">
+                <div v-if="!settingsForm.site_favicon"><p style="color:#9f927d">点击或拖拽图标到这里（建议 ICO 格式）</p></div>
+                <img v-else :src="settingsForm.site_favicon" style="width:40px;height:40px">
+              </div>
+              <div v-if="settingsForm.site_favicon" style="display:flex;gap:10px;margin-top:10px">
+                <button @click="$refs.faviconInput.click()" style="padding:8px 16px;background:#19c8b9;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">更换图标</button>
+                <button @click="settingsForm.site_favicon=''" style="padding:8px 16px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除图标</button>
               </div>
             </div>
             <div class="form-group">
@@ -1193,69 +1308,7 @@ function getAdminHTML() {
       </div>
     </div>
     
-    <!-- 编辑文章模态框 -->
-    <div v-if="showModal" class="modal" @click.self="showModal = false">
-      <div class="modal-box" style="max-width:800px">
-        <div class="modal-header">
-          <h3>{{ editingId ? '编辑文章' : '新建文章' }}</h3>
-          <button class="modal-close" @click="showModal = false">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>标题</label>
-            <input v-model="form.title" placeholder="文章标题">
-          </div>
-          <div class="form-group">
-            <label>文章密码（可选）</label>
-            <input v-model="form.password" type="password" placeholder="留空则无需密码">
-          </div>
-          <div class="form-group">
-            <label>分类</label>
-            <select v-model="form.category" required>
-              <option value="">请选择分类</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>状态</label>
-              <select v-model="form.status">
-                <option value="draft">草稿</option>
-                <option value="published">已发布</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>标签（逗号分隔）</label>
-              <input v-model="form.tags" placeholder="标签1,标签2">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>封面图片</label>
-            <div class="cover-upload" @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
-              <input ref="fileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
-              <div v-if="!coverPreview"><p style="color:#9f927d">点击或拖拽图片到这里</p></div>
-              <img v-else :src="coverPreview" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:12px">
-            </div>
-            <div v-if="uploading" style="margin-top:10px">
-              <div class="upload-bar"><div :style="{width:uploadProgress+'%'}"></div></div>
-              <p style="font-size:12px;color:#9f927d;margin-top:5px">上传中... {{ uploadProgress }}%</p>
-            </div>
-            <div v-if="coverPreview" style="display:flex;gap:10px;margin-top:10px">
-              <button @click="$refs.fileInput.click()" style="padding:8px 16px;background:#19c8b9;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">更换图片</button>
-              <button @click="deleteCover" style="padding:8px 16px;background:#e05a5a;color:#fff;border:none;border-radius:50px;cursor:pointer;font-size:13px">删除图片</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>内容</label>
-            <textarea v-model="form.content" placeholder="文章内容" rows="12"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-cancel" @click="showModal = false">取消</button>
-          <button class="btn" @click="savePost">保存</button>
-        </div>
-      </div>
-    </div>
+
     
     <div v-if="toast" class="toast">{{ toast }}</div>
   </div>
@@ -1266,8 +1319,6 @@ function getAdminHTML() {
         const logged = ref(false);
         const password = ref('');
         const posts = ref([]);
-        const showModal = ref(false);
-        const editingId = ref(null);
         const form = ref({ title: '', category: '', status: 'draft', tags: '', content: '', cover_image: '', password: '' });
         const coverPreview = ref('');
         const toast = ref('');
@@ -1330,26 +1381,28 @@ function getAdminHTML() {
           editingId.value = null;
           form.value = { title: '', category: '', status: 'draft', tags: '', content: '', cover_image: '', password: '' };
           coverPreview.value = '';
-          showModal.value = true;
-          currentPage.value = 'posts';
+          currentPage.value = 'new';
         };
 
-        const openEdit = (post) => {
-          editingId.value = post.id;
-          form.value = { title: post.title, content: post.content, category: post.category, tags: post.tags, status: post.status, cover_image: post.cover_image || '', password: post.password || '' };
-          coverPreview.value = post.cover_image || '';
-          showModal.value = true;
+        const toggleEdit = (post) => {
+          if (editingId.value === post.id) {
+            editingId.value = null;
+          } else {
+            editingId.value = post.id;
+            form.value = { title: post.title, content: post.content, category: post.category, tags: post.tags, status: post.status, cover_image: post.cover_image || '', password: post.password || '' };
+            coverPreview.value = post.cover_image || '';
+          }
         };
 
         const savePost = async () => {
           try {
             if (editingId.value) {
               const res = await api('/api/admin/post?id=' + editingId.value, { method: 'PUT', data: form.value });
-              if (res.data.success) { showModal.value = false; loadPosts(); showToast('保存成功'); }
+              if (res.data.success) { editingId.value = null; loadPosts(); showToast('保存成功'); }
               else alert('保存失败: ' + (res.data.error || '未知错误'));
             } else {
               const res = await api('/api/admin/post', { method: 'POST', data: form.value });
-              if (res.data.success) { showModal.value = false; loadPosts(); showToast('保存成功'); }
+              if (res.data.success) { currentPage.value = 'posts'; loadPosts(); showToast('保存成功'); }
               else alert('保存失败: ' + (res.data.error || '未知错误'));
             }
           } catch (e) { alert('保存失败: ' + (e.response?.data?.error || e.message)); }
@@ -1392,12 +1445,16 @@ function getAdminHTML() {
         };
         const deleteCover = () => { form.value.cover_image = ''; coverPreview.value = ''; };
 
-        const handleFavicon = async (e) => { const file = e.target.files[0]; if (file) { const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) settingsForm.value.site_favicon = data.url; } };
-        const handleAvatar = async (e) => { const file = e.target.files[0]; if (file) { const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) settingsForm.value.site_avatar = data.url; } };
+        const handleFavicon = async (e) => { const file = e.target.files[0]; if (file) await uploadFavicon(file); };
+        const handleFaviconDrop = async (e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) await uploadFavicon(file); };
+        const uploadFavicon = async (file) => { const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) settingsForm.value.site_favicon = data.url; };
+        const handleAvatar = async (e) => { const file = e.target.files[0]; if (file) await uploadAvatar(file); };
+        const handleAvatarDrop = async (e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file && file.type.startsWith('image/')) await uploadAvatar(file); };
+        const uploadAvatar = async (file) => { const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) settingsForm.value.site_avatar = data.url; };
 
         onMounted(() => { check(); loadCategories(); loadSettings(); });
 
-        return { logged, password, login, logout, posts, showModal, editingId, form, coverPreview, toast, uploading, uploadProgress, openAdd, openEdit, handleCoverChange, handleDrop, savePost, deletePost, deleteCover, categories, currentPage, categoryForm, saveCategory, deleteCategory, settingsForm, saveSettings, handleFavicon, handleAvatar };
+        return { logged, password, login, logout, posts, editingId, form, coverPreview, toast, uploading, uploadProgress, openAdd, toggleEdit, handleCoverChange, handleDrop, savePost, deletePost, deleteCover, categories, currentPage, categoryForm, saveCategory, deleteCategory, settingsForm, saveSettings, handleFavicon, handleFaviconDrop, handleAvatar, handleAvatarDrop };
       }
     }).mount('#app');
   <\/script>
