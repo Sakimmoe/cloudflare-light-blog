@@ -1205,21 +1205,24 @@ function getAdminHTML() {
     
     .toast { position: fixed; bottom: 20px; right: 20px; padding: 16px 24px; background: #6fba2c; color: #fff; border-radius: 50px; z-index: 2000; font-weight: 600; box-shadow: 0 4px 0 0 #5a9e1e; }
     
-    .admin-mobile-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 1001; width: 40px; height: 40px; background: #19c8b9; border: none; border-radius: 12px; color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 3px 0 #11a89b; }
-    .admin-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+    .sidebar-toggle { display: none; width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: none; color: #fff; cursor: pointer; font-size: 14px; font-weight: 600; border-top: 2px solid rgba(255,255,255,0.2); }
     @media (max-width: 768px) {
-      .admin-mobile-toggle { display: flex; align-items: center; justify-content: center; }
-      .admin-mobile-overlay.show { display: block; }
       .admin-layout { flex-direction: row; }
-      .sidebar { width: 240px; position: fixed; top: 0; left: -240px; height: 100vh; z-index: 1000; transition: left 0.3s ease; flex-direction: column; padding: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
-      .sidebar.open { left: 0; }
-      .sidebar-header { padding: 16px; display: block; }
-      .sidebar-header h1 { font-size: 16px; }
-      .sidebar-menu { display: flex; flex-direction: column; padding: 8px 12px; gap: 4px; }
-      .sidebar-menu a { white-space: nowrap; padding: 10px 12px; margin: 0; font-size: 14px; border-radius: 10px; }
-      .sidebar-footer { padding: 12px 16px; margin-top: auto; }
-      .sidebar-footer button { padding: 10px 16px; font-size: 14px; width: 100%; }
-      .main-content { padding: 16px; margin-left: 0; width: 100%; }
+      .sidebar { width: 200px; min-width: 200px; height: 100vh; position: sticky; top: 0; flex-direction: column; transition: width 0.3s, min-width 0.3s; overflow: hidden; }
+      .sidebar.collapsed { width: 60px; min-width: 60px; }
+      .sidebar-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .sidebar-header { padding: 16px; white-space: nowrap; overflow: hidden; }
+      .sidebar-header h1 { font-size: 15px; white-space: nowrap; }
+      .sidebar.collapsed .sidebar-header h1 { display: none; }
+      .sidebar-menu { display: flex; flex-direction: column; padding: 8px; gap: 4px; }
+      .sidebar-menu a { white-space: nowrap; padding: 10px 12px; margin: 0; font-size: 13px; border-radius: 10px; display: flex; align-items: center; gap: 10px; }
+      .sidebar-menu a .icon { font-size: 18px; min-width: 20px; text-align: center; }
+      .sidebar-menu a .text { white-space: nowrap; overflow: hidden; }
+      .sidebar.collapsed .sidebar-menu a .text { display: none; }
+      .sidebar-footer { padding: 12px; white-space: nowrap; overflow: hidden; }
+      .sidebar-footer button { padding: 10px; font-size: 13px; width: 100%; white-space: nowrap; }
+      .sidebar.collapsed .sidebar-footer button span { display: none; }
+      .main-content { padding: 16px; flex: 1; overflow-x: hidden; }
       .page-header { flex-direction: column; gap: 8px; align-items: flex-start; }
       .page-header h2 { font-size: 1.2em; }
       .card { padding: 14px; border-radius: 16px; margin-bottom: 12px; }
@@ -1244,35 +1247,36 @@ function getAdminHTML() {
       </div>
     </div>
     <div v-else class="admin-layout">
-      <div class="admin-mobile-overlay" :class="{show: adminNavOpen}" @click="toggleAdminNav"></div>
-      <nav class="sidebar" :class="{open: adminNavOpen}">
-        <button class="admin-mobile-toggle" @click="toggleAdminNav" style="position:absolute;top:12px;right:12px;left:auto;z-index:1002">☰</button>
+      <nav class="sidebar" :class="{collapsed: sidebarCollapsed}">
         <div class="sidebar-header">
           <h1>管理后台</h1>
         </div>
         <div class="sidebar-menu">
-          <a href="#" :class="{active: currentPage==='posts'}" @click.prevent="currentPage='posts';closeNav()">
-            <span class="icon">📝</span> 文章管理
+          <a href="#" :class="{active: currentPage==='posts'}" @click.prevent="currentPage='posts'">
+            <span class="icon">📝</span><span class="text">文章管理</span>
           </a>
-          <a href="#" :class="{active: currentPage==='new'}" @click.prevent="openAdd();closeNav()">
-            <span class="icon">✏️</span> 新建文章
+          <a href="#" :class="{active: currentPage==='new'}" @click.prevent="openAdd()">
+            <span class="icon">✏️</span><span class="text">新建文章</span>
           </a>
-          <a href="#" :class="{active: currentPage==='category'}" @click.prevent="currentPage='category';closeNav()">
-            <span class="icon">📂</span> 分类管理
+          <a href="#" :class="{active: currentPage==='category'}" @click.prevent="currentPage='category'">
+            <span class="icon">📂</span><span class="text">分类管理</span>
           </a>
-          <a href="#" :class="{active: currentPage==='profile'}" @click.prevent="currentPage='profile';closeNav()">
-            <span class="icon">👤</span> 个人设置
+          <a href="#" :class="{active: currentPage==='profile'}" @click.prevent="currentPage='profile'">
+            <span class="icon">👤</span><span class="text">个人设置</span>
           </a>
-          <a href="#" :class="{active: currentPage==='trash'}" @click.prevent="currentPage='trash';closeNav()">
-            <span class="icon">🗑️</span> 回收站
+          <a href="#" :class="{active: currentPage==='trash'}" @click.prevent="currentPage='trash'">
+            <span class="icon">🗑️</span><span class="text">回收站</span>
           </a>
-          <a href="#" :class="{active: currentPage==='settings'}" @click.prevent="currentPage='settings';closeNav()">
-            <span class="icon">⚙️</span> 网站设置
+          <a href="#" :class="{active: currentPage==='settings'}" @click.prevent="currentPage='settings'">
+            <span class="icon">⚙️</span><span class="text">网站设置</span>
           </a>
         </div>
         <div class="sidebar-footer">
-          <button @click="logout">退出登录</button>
+          <button @click="logout">🚪 <span>退出登录</span></button>
         </div>
+        <button class="sidebar-toggle" @click="sidebarCollapsed = !sidebarCollapsed">
+          {{ sidebarCollapsed ? '▶' : '◀' }} <span v-if="!sidebarCollapsed">收起</span>
+        </button>
       </nav>
       
       <div class="main-content">
@@ -1783,17 +1787,7 @@ function getAdminHTML() {
         const uploadAvatar = async (file) => { const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (data.url) settingsForm.value.site_avatar = data.url; };
 
         const trashPosts = ref([]);
-        const adminNavOpen = ref(false);
-        
-        const toggleAdminNav = () => {
-          adminNavOpen.value = !adminNavOpen.value;
-          document.querySelector('.sidebar').classList.toggle('open', adminNavOpen.value);
-        };
-        
-        const closeNav = () => {
-          adminNavOpen.value = false;
-          document.querySelector('.sidebar').classList.remove('open');
-        };
+        const sidebarCollapsed = ref(false);
         
         const loadTrash = async () => {
           try { const res = await api('/api/admin/trash'); trashPosts.value = res.data; } catch(e) {}
@@ -1839,7 +1833,7 @@ function getAdminHTML() {
           setTimeout(() => { textarea.focus(); textarea.selectionStart = start + insert.length; textarea.selectionEnd = start + insert.length; }, 0);
         };
 
-        return { logged, password, login, logout, posts, editingId, form, coverPreview, toast, uploading, uploadProgress, openAdd, toggleEdit, handleCoverChange, handleDrop, savePost, deletePost, deleteCover, categories, currentPage, categoryForm, saveCategory, deleteCategory, editCategory, showCategoryForm, editingCategory, settingsForm, saveSettings, handleFavicon, handleFaviconDrop, handleAvatar, handleAvatarDrop, insertMd, trashPosts, restorePost, permanentDelete, emptyTrash, confirmModal, showConfirm, adminNavOpen, toggleAdminNav, closeNav };
+        return { logged, password, login, logout, posts, editingId, form, coverPreview, toast, uploading, uploadProgress, openAdd, toggleEdit, handleCoverChange, handleDrop, savePost, deletePost, deleteCover, categories, currentPage, categoryForm, saveCategory, deleteCategory, editCategory, showCategoryForm, editingCategory, settingsForm, saveSettings, handleFavicon, handleFaviconDrop, handleAvatar, handleAvatarDrop, insertMd, trashPosts, restorePost, permanentDelete, emptyTrash, confirmModal, showConfirm, sidebarCollapsed };
       }
     }).mount('#app');
   <\/script>
