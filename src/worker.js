@@ -51,6 +51,12 @@ async function initDB(env) {
         await env.DB.prepare("ALTER TABLE posts ADD COLUMN password TEXT").run();
         console.log('已添加 password 列');
       }
+      try {
+        await env.DB.prepare("SELECT published_at FROM posts LIMIT 1").all();
+      } catch (e) {
+        await env.DB.prepare("ALTER TABLE posts ADD COLUMN published_at TEXT").run();
+        console.log('已添加 published_at 列');
+      }
     }
 
     // 检查 categories 表是否存在
@@ -1432,8 +1438,8 @@ function getAdminHTML() {
               <input v-model="categoryForm.description" placeholder="分类描述">
             </div>
             <div style="display:flex;gap:10px;justify-content:flex-end">
-              <button class="btn btn-cancel" @click="showCategoryForm = false">取消</button>
               <button class="btn" @click="saveCategory">保存</button>
+              <button class="btn btn-cancel" @click="showCategoryForm = false">取消</button>
             </div>
           </div>
           
@@ -1441,8 +1447,8 @@ function getAdminHTML() {
           <div v-for="cat in categories" :key="cat.id" class="card" style="margin-bottom:12px">
             <div style="display:flex;align-items:center;gap:12px">
               <div style="display:flex;gap:6px">
-                <button class="btn" @click="editCategory(cat)" style="padding:6px 14px;font-size:13px">编辑</button>
                 <button class="btn btn-danger" @click="deleteCategory(cat.id)" style="padding:6px 14px;font-size:13px">删除</button>
+                <button class="btn" @click="editCategory(cat)" style="padding:6px 14px;font-size:13px">编辑</button>
               </div>
               <div style="flex:1">
                 <span style="color:#794f27;font-weight:600">{{ cat.name }}</span>
@@ -1651,6 +1657,8 @@ function getAdminHTML() {
             alert('请填写英文ID和中文名称');
             return;
           }
+          const confirmed = await showConfirm('确认保存', editingCategory.value ? '确定要更新这个分类吗？' : '确定要添加这个分类吗？');
+          if (!confirmed) return;
           try {
             const data = { ...categoryForm.value };
             if (editingCategory.value) data.id = editingCategory.value;
@@ -1670,8 +1678,9 @@ function getAdminHTML() {
         };
 
         const deleteCategory = async (id) => {
-          if (!confirm('确定删除?')) return;
-          try { await api('/api/category?id=' + id, { method: 'DELETE' }); loadCategories(); } catch(e) {}
+          const confirmed = await showConfirm('确认删除', '确定要删除这个分类吗？');
+          if (!confirmed) return;
+          try { await api('/api/category?id=' + id, { method: 'DELETE' }); loadCategories(); showToast('已删除'); } catch(e) {}
         };
 
         const saveSettings = async () => {
