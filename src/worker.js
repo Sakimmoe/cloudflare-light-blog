@@ -1362,21 +1362,6 @@ function getAdminHTML() {
                 </div>
               </div>
               <div class="form-group">
-                <label>内容</label>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-                  <button type="button" @click="insertMd('heading')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;font-weight:600;color:#725d42">标题</button>
-                  <button type="button" @click="insertMd('bold')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;font-weight:700;color:#725d42">B</button>
-                  <button type="button" @click="insertMd('italic')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;font-style:italic;color:#725d42">I</button>
-                  <button type="button" @click="insertMd('link')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">🔗 链接</button>
-                  <button type="button" @click="insertMd('image')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">🖼 图片</button>
-                  <button type="button" @click="insertMd('code')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;font-family:monospace;color:#725d42">代码</button>
-                  <button type="button" @click="insertMd('ul')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">• 列表</button>
-                  <button type="button" @click="insertMd('ol')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">1. 序号</button>
-                  <button type="button" @click="insertMd('quote')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">❝ 引用</button>
-                  <button type="button" @click="insertMd('hr')" style="padding:6px 12px;background:#f0e8d8;border:2px solid #c4b89e;border-radius:8px;cursor:pointer;color:#725d42">— 分割线</button>
-                </div>
-                <textarea ref="editContentArea" v-model="form.content" placeholder="文章内容" rows="10"></textarea>
-              </div>
               <div class="editor-layout" style="margin-top:16px;padding-top:16px;border-top:2px solid #e8e0cc">
                 <div class="editor-main">
                   <div class="form-group">
@@ -1402,18 +1387,6 @@ function getAdminHTML() {
                 </div>
                 <div class="editor-side">
                   <div class="form-group">
-                    <label>封面图片</label>
-                    <div class="cover-upload" @click="$refs.editFileInput.click()" @dragover.prevent @drop.prevent="handleDrop" style="padding:16px">
-                      <input ref="editFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
-                      <div v-if="!coverPreview"><p style="color:#9f927d;font-size:12px">点击上传</p></div>
-                      <img v-else :src="coverPreview" style="width:100%;border-radius:8px">
-                    </div>
-                    <div v-if="coverPreview" style="display:flex;gap:6px;margin-top:6px">
-                      <button @click="$refs.editFileInput.click()" style="flex:1;padding:5px;background:#19c8b9;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">更换</button>
-                      <button @click="deleteCover" style="flex:1;padding:5px;background:#e05a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">删除</button>
-                    </div>
-                  </div>
-                  <div class="form-group">
                     <label>状态</label>
                     <select v-model="form.status">
                       <option value="draft">草稿</option>
@@ -1436,8 +1409,20 @@ function getAdminHTML() {
                     <input v-model="form.tags" placeholder="标签1,标签2">
                   </div>
                   <div class="form-group">
-                    <label>密码</label>
+                    <label>密码（可选）</label>
                     <input v-model="form.password" type="password" placeholder="留空无需密码">
+                  </div>
+                  <div class="form-group">
+                    <label>封面图片</label>
+                    <div class="cover-upload" @click="$refs.editFileInput.click()" @dragover.prevent @drop.prevent="handleDrop" style="padding:16px">
+                      <input ref="editFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
+                      <div v-if="!coverPreview"><p style="color:#9f927d;font-size:12px">点击上传</p></div>
+                      <img v-else :src="coverPreview" style="width:100%;border-radius:8px">
+                    </div>
+                    <div v-if="coverPreview" style="display:flex;gap:6px;margin-top:6px">
+                      <button @click="$refs.editFileInput.click()" style="flex:1;padding:5px;background:#19c8b9;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">更换</button>
+                      <button @click="deleteCover" style="flex:1;padding:5px;background:#e05a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">删除</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1484,18 +1469,6 @@ function getAdminHTML() {
             <div class="editor-side">
               <div class="card">
                 <div class="form-group">
-                  <label>封面图片</label>
-                  <div class="cover-upload" @click="$refs.newFileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
-                    <input ref="newFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
-                    <div v-if="!coverPreview"><p style="color:#9f927d;font-size:13px">点击或拖拽上传</p></div>
-                    <img v-else :src="coverPreview" style="width:100%;object-fit:cover;border-radius:12px">
-                  </div>
-                  <div v-if="coverPreview" style="display:flex;gap:8px;margin-top:8px">
-                    <button @click="$refs.newFileInput.click()" style="flex:1;padding:6px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">更换</button>
-                    <button @click="deleteCover" style="flex:1;padding:6px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">删除</button>
-                  </div>
-                </div>
-                <div class="form-group">
                   <label>状态</label>
                   <select v-model="form.status">
                     <option value="draft">草稿</option>
@@ -1520,6 +1493,18 @@ function getAdminHTML() {
                 <div class="form-group">
                   <label>密码（可选）</label>
                   <input v-model="form.password" type="password" placeholder="留空无需密码">
+                </div>
+                <div class="form-group">
+                  <label>封面图片</label>
+                  <div class="cover-upload" @click="$refs.newFileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+                    <input ref="newFileInput" type="file" @change="handleCoverChange" accept="image/*" style="display:none">
+                    <div v-if="!coverPreview"><p style="color:#9f927d;font-size:13px">点击或拖拽上传</p></div>
+                    <img v-else :src="coverPreview" style="width:100%;object-fit:cover;border-radius:12px">
+                  </div>
+                  <div v-if="coverPreview" style="display:flex;gap:8px;margin-top:8px">
+                    <button @click="$refs.newFileInput.click()" style="flex:1;padding:6px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">更换</button>
+                    <button @click="deleteCover" style="flex:1;padding:6px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">删除</button>
+                  </div>
                 </div>
               </div>
             </div>
