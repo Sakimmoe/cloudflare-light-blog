@@ -1029,7 +1029,40 @@ function getFrontendHTML(settings) {
         list.innerHTML = links.map(l=>'<a href="'+l.url+'" target="_blank">'+l.name+'</a>').join('');
       }
     });
-  </script>
+    // 返回顶部
+    window.addEventListener('scroll', function() {
+      var btn = document.querySelector('.back-to-top');
+      if (btn) {
+        if (window.scrollY > 300) {
+          btn.classList.add('show');
+        } else {
+          btn.classList.remove('show');
+        }
+      }
+    });
+    
+    // 灯箱功能
+    function initLightbox() {
+      var images = document.querySelectorAll('.post-article img');
+      images.forEach(function(img) {
+        img.addEventListener('click', function() {
+          openLightbox(this.src);
+        });
+      });
+    }
+    
+    function openLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox(event) {
+      if (event.target.id === 'lightbox' || event.target.classList.contains('lightbox-close')) {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
     
     // ESC 键关闭灯箱
     document.addEventListener('keydown', function(e) {
@@ -1207,30 +1240,112 @@ function getPostHTML(post, settings) {
     .profile-card .stat-num { font-size: 1.1em; font-weight: 800; color: #19c8b9; }
     .profile-card .stat-label { font-size: 0.75em; color: #9f927d; font-weight: 600; }
     .profile-card h4 { font-size: 0.85em; color: #9f927d; margin: 14px 0 8px; font-weight: 700; letter-spacing: 0.5px; }
-    .profile-card .category-list a, .profile-card .link-list a { display: block; padding: 8px 12px; margin: 0 0 6px 0; color: #725d42; text-decoration: none; background: #f0e8d8; border-radius: 12px; font-size: 0.85em; font-weight: 600; transition: all 0.2s; border: 2px solid transparent; outline: none; }
+    .profile-card .category-list a, .profile-card .link-list a { display: block; padding: 8px 12px; margin: 0 0 6px 0; color: #725d42; text-decoration: none; background: #f0e8d8; border-radius: 12px; font-size: 0.85em; font-weight: 600; transition: all 0.2s; border: 2px solid transparent; }
     .profile-card .category-list a:hover, .profile-card .link-list a:hover { background: #e6f9f6; border-color: #19c8b9; color: #11a89b; }
-    .profile-card .category-list a:focus, .profile-card .link-list a:focus { outline: none; background: #f0e8d8; border-color: transparent; }
-    .post-article { background: #f7f3df; border-radius: 20px; padding: 36px; box-shadow: 0 4px 10px rgba(107, 92, 67, 0.42); border: 2px solid #e8e0cc; }
+    .post-article { background: #f7f3df; padding: 36px; border-radius: 20px; box-shadow: 0 4px 10px rgba(107, 92, 67, 0.42); border: 2px solid #e8e0cc; }
     .post-article h1 { font-size: 1.8em; margin-bottom: 16px; color: #794f27; font-weight: 800; }
+    .post-article p { margin: 0.8em 0; line-height: 1.8; }
+    .post-article img { max-width: 100%; height: auto; margin: 1em 0; border-radius: 12px; }
     .post-meta { color: #9f927d; font-size: 0.85em; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #e8e0cc; font-weight: 600; }
     .post-meta span { margin-right: 16px; }
-    .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 24px; background: #19c8b9; color: #fff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 0 0 #11a89b; }
-    footer { text-align: center; padding: 30px 20px; color: #9f927d; font-size: 0.85em; }
-    .back-to-top { position: fixed; bottom: 30px; right: 30px; width: 44px; height: 44px; background: #19c8b9; color: #fff; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; box-shadow: 0 4px 0 0 #11a89b; display: flex; align-items: center; justify-content: center; z-index: 998; }
-    .back-to-top:hover { transform: translateY(-2px); box-shadow: 0 6px 0 0 #11a89b; }
-    .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; }
+    .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 24px; background: #19c8b9; color: #fff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 0 0 #11a89b; transition: all 0.25s; }
+    .back-link:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #11a89b; }
+    .back-link:active { transform: translateY(2px); box-shadow: 0 1px 0 0 #11a89b; }
+    footer { text-align: center; padding: 30px 20px; color: #9f927d; font-size: 0.85em; font-weight: 500; }
+    
+    /* 灯箱样式 */
+    .lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
     .lightbox.active { display: flex; }
-    .lightbox img { max-width: 85%; max-height: 85%; border: 4px solid #555; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-    .lightbox-close { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #fff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1; }
-    .lightbox-prev, .lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #fff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1; }
-    .lightbox-prev { left: 20px; }
-    .lightbox-next { right: 20px; }
-    .lightbox-counter { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px; }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      cursor: default;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.3); }
     .post-article img { cursor: zoom-in; transition: transform 0.2s; }
+    .post-article img:hover { transform: scale(1.02); }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 44px;
+      height: 44px;
+      background: #19c8b9;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 0 #11a89b;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 998;
+    }
+    .back-to-top:hover { transform: translateY(-2px); box-shadow: 0 6px 0 0 #11a89b; }
+    
     .mobile-nav-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 1004; width: 40px; height: 40px; background: #19c8b9; border: none; border-radius: 12px; color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 3px 0 #11a89b; transition: left 0.3s; }
     .mobile-nav-toggle.nav-open { left: 208px !important; }
     .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-    @media (max-width: 768px) { header { padding: 16px; text-align: center; } .mobile-nav-toggle { display: flex; align-items: center; justify-content: center; } .mobile-overlay.show { display: block; } main { flex-direction: row; padding: 0 12px; } .sidebar { width: 220px; position: fixed; top: 0; left: -220px; height: 100vh; z-index: 1002; transition: left 0.3s; background: #f8f8f0; padding: 16px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); } .sidebar.open { left: 0; } }
+    @media (max-width: 768px) {
+      header { padding: 16px; text-align: center; }
+      header h1 { font-size: 1.4em; }
+      header p { font-size: 0.85em; }
+      .mobile-nav-toggle { display: flex; align-items: center; justify-content: center; }
+      .mobile-overlay.show { display: block; }
+      main { flex-direction: row; padding: 0 12px; gap: 0; margin-top: 12px; }
+      .sidebar { width: 220px; position: fixed; top: 0; left: -220px; height: 100vh; z-index: 1002; transition: left 0.3s ease; overflow-y: auto; background: #f8f8f0; padding: 16px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+      .sidebar.open { left: 0; }
+      .profile-card { border-radius: 16px; padding: 16px; }
+      .profile-card .avatar { width: 56px; height: 56px; }
+      .mobile-overlay.show { display: block; }
+      main { flex-direction: row; padding: 0 12px; gap: 0; margin-top: 12px; position: relative; }
+      .sidebar { width: 260px; position: fixed; top: 0; left: -260px; height: 100vh; z-index: 1000; transition: left 0.3s ease; overflow-y: auto; background: #f8f8f0; padding: 16px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+      .sidebar.open { left: 0; }
+      .profile-card { border-radius: 16px; padding: 16px; }
+      .profile-card .avatar { width: 56px; height: 56px; }
+      .profile-card .name { font-size: 1em; }
+      .post-list { width: 100%; gap: 16px; }
+      .post-card { flex-direction: row; border-radius: 16px; }
+      .post-card .post-cover { width: 120px; min-height: 100px; }
+      .post-card .post-content { padding: 14px; }
+      .post-card h2 { font-size: 1em; }
+      .post-card .excerpt { font-size: 0.8em; }
+      .post-card .meta { font-size: 0.75em; }
+      .post-card a.read-more { padding: 6px 14px; font-size: 0.8em; }
+      footer { padding: 20px 16px; font-size: 0.8em; }
+    }
   </style>
 </head>
 <body>
@@ -1280,12 +1395,9 @@ function getPostHTML(post, settings) {
     </div>
   </main>
   <!-- 灯箱 -->
-  <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" onclick="closeLightbox()">×</button>
-    <button class="lightbox-prev" onclick="prevImage()">‹</button>
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox(event)">×</button>
     <img id="lightbox-img" src="" alt="">
-    <button class="lightbox-next" onclick="nextImage()">›</button>
-    <div class="lightbox-counter" id="lightbox-counter"></div>
   </div>
   
   <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -1310,56 +1422,7 @@ function getPostHTML(post, settings) {
     });
     
     // 灯箱功能
-    var lightboxImages = [];
-    var currentIndex = 0;
-    
     function initLightbox() {
-      lightboxImages = Array.from(document.querySelectorAll('.post-article img'));
-      lightboxImages.forEach(function(img, index) {
-        img.addEventListener('click', function() {
-          openLightbox(index);
-        });
-      });
-    }
-    
-    function openLightbox(index) {
-      currentIndex = index;
-      updateLightbox();
-      document.getElementById('lightbox').classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function updateLightbox() {
-      if (lightboxImages.length > 0 && lightboxImages[currentIndex]) {
-        document.getElementById('lightbox-img').src = lightboxImages[currentIndex].src;
-        document.getElementById('lightbox-counter').textContent = (currentIndex + 1) + ' / ' + lightboxImages.length;
-      }
-    }
-    
-    function prevImage() {
-      if (currentIndex > 0) { currentIndex--; updateLightbox(); }
-    }
-    
-    function nextImage() {
-      if (currentIndex < lightboxImages.length - 1) { currentIndex++; updateLightbox(); }
-    }
-    
-    function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('active');
-      document.body.style.overflow = '';
-    }
-    
-    document.addEventListener('keydown', function(e) {
-      var lb = document.getElementById('lightbox');
-      if (!lb || !lb.classList.contains('active')) return;
-      if (e.key === 'Escape') closeLightbox();
-      else if (e.key === 'ArrowLeft') prevImage();
-      else if (e.key === 'ArrowRight') nextImage();
-    });
-    
-    document.getElementById('lightbox').addEventListener('click', function(e) {
-      if (e.target === this) closeLightbox();
-    });
       var images = document.querySelectorAll('.post-article img');
       images.forEach(function(img) {
         img.addEventListener('click', function() {
