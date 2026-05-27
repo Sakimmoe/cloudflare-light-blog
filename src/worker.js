@@ -826,8 +826,12 @@ function getFrontendHTML(settings) {
   ${settings.custom_js ? '<script>' + settings.custom_js + '<\/script>' : ''}
   <script>
     function toggleNav() {
-      document.querySelector('.sidebar').classList.toggle('open');
-      document.getElementById('mobileOverlay').classList.toggle('show');
+      var sidebar = document.querySelector('.sidebar');
+      var btn = document.querySelector('.mobile-nav-toggle');
+      var overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      btn.classList.toggle('open');
     }
   </script>
   <script>
@@ -848,8 +852,12 @@ function getFrontendHTML(settings) {
       }
     });
     function toggleNav() {
-      document.querySelector('.sidebar').classList.toggle('open');
-      document.getElementById('mobileOverlay').classList.toggle('show');
+      var sidebar = document.querySelector('.sidebar');
+      var btn = document.querySelector('.mobile-nav-toggle');
+      var overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      btn.classList.toggle('open');
     }
     
     async function loadPosts() {
