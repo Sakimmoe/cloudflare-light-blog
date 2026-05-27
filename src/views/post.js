@@ -80,13 +80,18 @@ export function getPostHTML(post, settings) {
     @media (max-width: 768px) {
       header { padding: 16px; }
       header h1 { font-size: 1.4em; }
+      header p { font-size: 0.85em; }
       .mobile-nav-toggle { display: flex; align-items: center; justify-content: center; }
-      main { flex-direction: row; padding: 0 12px; gap: 0; margin-top: 12px; }
-      .sidebar { width: 220px; position: fixed; top: 0; left: -220px; height: 100vh; z-index: 1002; transition: left 0.3s ease; overflow-y: auto; background: #f8f8f0; padding: 16px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+      .mobile-overlay.show { display: block; }
+      main { flex-direction: row; padding: 0 12px; gap: 0; margin-top: 12px; position: relative; }
+      .sidebar { width: 260px; position: fixed; top: 0; left: -260px; height: 100vh; z-index: 1002; transition: left 0.3s ease; overflow-y: auto; background: #f8f8f0; padding: 16px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
       .sidebar.open { left: 0; }
       .profile-card { border-radius: 16px; padding: 16px; }
+      .profile-card .avatar { width: 56px; height: 56px; }
+      .profile-card .name { font-size: 1em; }
       .post-article { padding: 20px; border-radius: 16px; }
       .post-article h1 { font-size: 1.3em; }
+      footer { padding: 20px 16px; font-size: 0.8em; }
     }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">

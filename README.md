@@ -85,7 +85,15 @@ git push -u origin main
 1. Cloudflare Dashboard → **Workers & Pages** → **Create Application**
 2. 选择 **Workers** → **Connect to Git**
 3. 选择你的 GitHub 仓库
-4. Cloudflare 会自动读取 `wrangler.toml` 配置并部署
+4. 在构建配置中填写：
+
+| 配置项 | 填写内容 |
+|--------|---------|
+| **生产分支** | `main` |
+| **构建命令** | （留空） |
+| **部署命令** | `npx wrangler deploy` |
+
+5. 点击保存，Cloudflare 会自动读取 `wrangler.toml` 配置并部署
 
 ### 6. 设置管理员密码
 
