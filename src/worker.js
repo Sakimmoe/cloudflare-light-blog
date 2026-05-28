@@ -97,10 +97,8 @@ async function handlePostPage(request, env, path, ctx) {
     return renderPostPage(env, id, providedPassword);
   }
 
-  // 无密码时使用缓存
-  return withCache(request, async () => {
-    return renderPostPage(env, id, null);
-  }, 600); // 缓存 10 分钟
+  // 文章详情页不缓存（编辑后立即生效）
+  return renderPostPage(env, id, null);
 }
 
 /**
