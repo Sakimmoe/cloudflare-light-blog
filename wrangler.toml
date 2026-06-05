@@ -9,7 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "blog-db"
-database_id = "a55bc271-25cb-4a47-a4aa-5dca0d176933"
+database_id = "7dc8164c-4d70-4952-9ef1-4a0fb0714186"
 #database_id = "${DB_ID}"
 
 # ============================================
