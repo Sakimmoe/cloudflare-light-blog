@@ -33,33 +33,6 @@ export function getFrontendHTML(settings) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-  /* 引入温润的霞鹜文楷字体 */
-    @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
-
-    body {
-      font-family: "LXGW WenKai Lite", sans-serif !important;
-      background-color: #f4f1eb !important; /* 温暖的米色背景 */
-    }
-
-    /* 核心：把所有按钮变成带有果冻阴影的胶囊形状 */
-    button, .btn, a.btn, input[type="submit"] {
-      background-color: #55c596 !important; /* 清新的动森绿 */
-      color: white !important;
-      border: none !important;
-      border-radius: 50px !important; /* 完美的半圆胶囊状 */
-      padding: 10px 24px !important;
-      font-weight: bold !important;
-      cursor: pointer !important;
-      /* 制作立体的 3D 果冻下半部阴影 */
-      box-shadow: 0 4px 0 #3e9873, 0 5px 10px rgba(85, 197, 150, 0.3) !important; 
-      transition: all 0.1s ease !important;
-    }
-
-    /* 核心交互：按钮按下去时候的回弹果冻感 */
-    button:active, .btn:active, a.btn:active, input[type="submit"]:active {
-      transform: translateY(4px) !important; /* 按下时按钮往下沉 */
-      box-shadow: 0 0 0 #3e9873, 0 2px 5px rgba(85, 197, 150, 0.3) !important; /* 阴影被压扁，产生真实按压感 */
-    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Nunito, 'Noto Sans SC', sans-serif; background: var(--body-bg, #f8f8f0); color: var(--text-body, #725d42); }
     header { background: linear-gradient(135deg, #7DC395 0%, #5BAF7A 100%); color: #fff; padding: 40px 20px; text-align: center; position: relative; overflow: hidden; }
