@@ -40,6 +40,8 @@ export function getAdminHTML() {
     .btn-danger { background: var(--danger-bg, #e05a5a); box-shadow: 0 4px 0 0 var(--danger-shadow, #c94444); }
     .btn-cancel { background: #e8e0d0; color: #725d42; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 0 0 #c4b89e; padding: 10px 24px; }
     .btn-cancel:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c4b89e; }
+    .btn-back { background: linear-gradient(135deg, #7DC395, #5BAF7A); color: #fff; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 0 0 #4a9a68; padding: 8px 20px; font-size: 14px; }
+    .btn-back:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #4a9a68; }
     .card { background: var(--card-bg, #f7f3df); border-radius: 20px; padding: 24px; box-shadow: 0 4px 10px rgba(107,92,67,0.42); border: 2px solid var(--card-border, #e8e0cc); margin-bottom: 16px; }
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #794f27; }
@@ -317,7 +319,7 @@ export function getAdminHTML() {
           <!-- 编辑/新建文章 -->
           <div v-if="editingId" class="card" style="margin-top:20px">
             <div class="page-header" style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-              <button class="btn btn-cancel" @click="cancelNewPost" style="padding:8px 16px;font-size:14px">← 返回</button>
+              <button class="btn-back" @click="cancelNewPost">返回</button>
               <h2>{{editingId === 'new' ? '新建文章' : '编辑文章'}}</h2>
             </div>
             <div class="editor-layout">
@@ -383,7 +385,7 @@ export function getAdminHTML() {
               </div>
             </div>
           </div>
-        </div></div>
+        </div>
         <div v-if="currentPage==='category'">
           <div class="page-header"><h2>分类管理</h2></div>
           <button class="btn" @click="editingCategory='new';categoryForm={name:'',slug:'',description:''}" style="margin-bottom:16px">添加分类</button>
@@ -651,6 +653,7 @@ export function getAdminHTML() {
       </div>
       <div v-if="toast" class="toast">{{toast}}</div>
     </div>
+  </div>
   </div>
   <script>
     const { createApp, ref, onMounted, watch } = Vue;
