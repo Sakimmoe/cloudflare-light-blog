@@ -488,191 +488,228 @@ export function getAdminHTML() {
         </div>
         <div v-if="currentPage==='settings'">
           <div class="page-header"><h2>网站设置</h2></div>
-          <div class="w-33">
-            <div class="card">
-              <div class="form-group"><label>网站标题</label><input v-model="settingsForm.site_name"></div>
-              <div class="form-group"><label>网站副标题</label><input v-model="settingsForm.site_description"></div>
-              <div class="form-group">
-                <label>网站图标</label>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                  <span style="color:#9f927d;font-size:14px">预览：</span>
-                  <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                    <img v-if="settingsForm.site_favicon && settingsForm.site_favicon.startsWith('http')" :src="settingsForm.site_favicon" style="width:32px;height:32px;object-fit:cover">
-                    <span v-else-if="settingsForm.site_favicon" style="font-size:20px">{{settingsForm.site_favicon}}</span>
-                    <span v-else style="color:#9f927d;font-size:12px">无</span>
+          <button class="btn" @click="saveSettings" style="margin-bottom:16px">保存设置</button>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <!-- 第一栏：网站设置 -->
+            <div style="flex:1;min-width:300px">
+              <div class="card">
+                <h3 style="color:#794f27;font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e8e0cc">基本设置</h3>
+                <div class="form-group"><label>网站标题</label><input v-model="settingsForm.site_name"></div>
+                <div class="form-group"><label>网站副标题</label><input v-model="settingsForm.site_description"></div>
+                <div class="form-group">
+                  <label>网站图标</label>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img v-if="settingsForm.site_favicon && (settingsForm.site_favicon.startsWith('http') || settingsForm.site_favicon.startsWith('/'))" :src="settingsForm.site_favicon" style="width:32px;height:32px;object-fit:cover">
+                      <span v-else-if="settingsForm.site_favicon" style="font-size:20px">{{settingsForm.site_favicon}}</span>
+                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input v-model="settingsForm.site_favicon" placeholder="输入emoji或图片地址" style="flex:1">
+                    <div @click="$refs.faviconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
+                      <input ref="faviconInput" type="file" @change="handleFavicon" accept=".ico,image/*" style="display:none">
+                      更换
+                    </div>
+                    <button v-if="settingsForm.site_favicon" @click="settingsForm.site_favicon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
                   </div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input v-model="settingsForm.site_favicon" placeholder="输入emoji或图片地址" style="flex:1">
-                  <div @click="$refs.faviconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                    <input ref="faviconInput" type="file" @change="handleFavicon" accept=".ico,image/*" style="display:none">
-                    更换
-                  </div>
-                  <button v-if="settingsForm.site_favicon" @click="settingsForm.site_favicon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>主题风格</label>
-                <div class="custom-select" @click.stop>
-                  <div class="custom-select-trigger" :class="{active: customSelects['theme']}" @click="toggleSelect('theme')">{{ settingsForm.site_theme === 'animal-forest' ? '🌲 动物森林' : '🌊 海洋微风' }}</div>
-                  <div class="custom-select-dropdown" :class="{show: customSelects['theme']}">
-                    <div class="custom-select-option" :class="{selected: settingsForm.site_theme==='animal-forest'}" @click="selectOption('theme', 'animal-forest', 'theme');applyTheme()">🌲 动物森林</div>
-                    <div class="custom-select-option" :class="{selected: settingsForm.site_theme==='ocean-breeze'}" @click="selectOption('theme', 'ocean-breeze', 'theme');applyTheme()">🌊 海洋微风</div>
+                <div class="form-group">
+                  <label>主题风格</label>
+                  <div class="custom-select" @click.stop>
+                    <div class="custom-select-trigger" :class="{active: customSelects['theme']}" @click="toggleSelect('theme')">{{ settingsForm.site_theme === 'animal-forest' ? '🌲 动物森林' : '🌊 海洋微风' }}</div>
+                    <div class="custom-select-dropdown" :class="{show: customSelects['theme']}">
+                      <div class="custom-select-option" :class="{selected: settingsForm.site_theme==='animal-forest'}" @click="selectOption('theme', 'animal-forest', 'theme');applyTheme()">🌲 动物森林</div>
+                      <div class="custom-select-option" :class="{selected: settingsForm.site_theme==='ocean-breeze'}" @click="selectOption('theme', 'ocean-breeze', 'theme');applyTheme()">🌊 海洋微风</div>
+                    </div>
                   </div>
                 </div>
+                <div class="form-group"><label>网站页脚（HTML）</label><textarea v-model="settingsForm.site_footer" rows="3"></textarea></div>
+                <div class="form-group"><label>自定义JS</label><textarea v-model="settingsForm.custom_js" rows="4" placeholder="请输入完整的 <script>...</script> 标签，例如：&#10;<script src=&quot;https://cdn.jsdelivr.net/npm/xxx.js&quot;></script>"></textarea></div>
               </div>
-              <div class="form-group"><label>网站页脚（HTML）</label><textarea v-model="settingsForm.site_footer" rows="3"></textarea></div>
-              <div class="form-group"><label>自定义JS</label><textarea v-model="settingsForm.custom_js" rows="4" placeholder="请输入完整的 <script>...</script> 标签，例如：&#10;<script src=&quot;https://cdn.jsdelivr.net/npm/xxx.js&quot;></script>"></textarea></div>
-              <div class="form-group"><label>全站密码（留空则不启用）</label><input v-model="settingsForm.site_password" type="password" placeholder="留空则公开访问"></div>
-              <div class="form-group"><label>CORS 允许来源（多域名用逗号分隔，* 表示全部）</label><input v-model="settingsForm.allowed_origins" placeholder="*"></div>
-              <div class="form-group">
-                <label>功能开关</label>
-                <div style="display:flex;gap:20px;margin-top:8px">
-                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:#725d42">
-                    <input type="checkbox" :true-value="'1'" :false-value="'0'" v-model="settingsForm.allow_robots" style="width:18px;height:18px;cursor:pointer">
-                    允许搜索引擎爬取
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:#725d42">
-                    <input type="checkbox" :true-value="'1'" :false-value="'0'" v-model="settingsForm.enable_compression" style="width:18px;height:18px;cursor:pointer">
-                    启用压缩
-                  </label>
+            </div>
+            <!-- 第二栏：安全与优化 -->
+            <div style="flex:1;min-width:300px">
+              <div class="card">
+                <h3 style="color:#794f27;font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e8e0cc">安全与优化</h3>
+                <div class="form-group"><label>全站密码（留空则不启用）</label><input v-model="settingsForm.site_password" type="password" placeholder="留空则公开访问"></div>
+                <div class="form-group"><label>CORS 允许来源（多域名用逗号分隔，* 表示全部）</label><input v-model="settingsForm.allowed_origins" placeholder="*"></div>
+                <div class="form-group">
+                  <label>是否允许搜索引擎爬取</label>
+                  <div class="radio-group">
+                    <label class="radio-item">
+                      <input type="radio" value="1" v-model="settingsForm.allow_robots">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">是</span>
+                    </label>
+                    <label class="radio-item">
+                      <input type="radio" value="0" v-model="settingsForm.allow_robots">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">否</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>是否启用压缩</label>
+                  <div class="radio-group">
+                    <label class="radio-item">
+                      <input type="radio" value="1" v-model="settingsForm.enable_compression">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">是</span>
+                    </label>
+                    <label class="radio-item">
+                      <input type="radio" value="0" v-model="settingsForm.enable_compression">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">否</span>
+                    </label>
+                  </div>
                 </div>
               </div>
-              <button class="btn" @click="saveSettings" style="width:100%;margin-top:16px">保存设置</button>
             </div>
           </div>
         </div>
         <div v-if="currentPage==='profile'">
           <div class="page-header"><h2>个人设置</h2></div>
-          <div class="w-33">
-            <div class="card">
-              <div class="form-group"><label>个人名称</label><input v-model="settingsForm.site_author"></div>
-              <div class="form-group">
-                <label>个人头像</label>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                  <span style="color:#9f927d;font-size:14px">预览：</span>
-                  <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                    <img v-if="settingsForm.site_avatar && settingsForm.site_avatar.startsWith('http')" :src="settingsForm.site_avatar" style="width:32px;height:32px;object-fit:cover">
-                    <span v-else-if="settingsForm.site_avatar" style="font-size:20px">{{settingsForm.site_avatar}}</span>
-                    <span v-else style="color:#9f927d;font-size:12px">无</span>
+          <button class="btn" @click="saveSettings" style="margin-bottom:16px">保存设置</button>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <!-- 第一栏：个人设置 -->
+            <div style="flex:1;min-width:300px">
+              <div class="card">
+                <h3 style="color:#794f27;font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e8e0cc">个人信息</h3>
+                <div class="form-group"><label>个人名称</label><input v-model="settingsForm.site_author"></div>
+                <div class="form-group">
+                  <label>个人头像</label>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img v-if="settingsForm.site_avatar && (settingsForm.site_avatar.startsWith('http') || settingsForm.site_avatar.startsWith('/'))" :src="settingsForm.site_avatar" style="width:32px;height:32px;object-fit:cover">
+                      <span v-else-if="settingsForm.site_avatar" style="font-size:20px">{{settingsForm.site_avatar}}</span>
+                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input v-model="settingsForm.site_avatar" placeholder="输入emoji或图片地址" style="flex:1">
+                    <div @click="$refs.avatarInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
+                      <input ref="avatarInput" type="file" @change="handleAvatar" accept="image/*" style="display:none">
+                      更换
+                    </div>
+                    <button v-if="settingsForm.site_avatar" @click="settingsForm.site_avatar=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
                   </div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input v-model="settingsForm.site_avatar" placeholder="输入emoji或图片地址" style="flex:1">
-                  <div @click="$refs.avatarInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                    <input ref="avatarInput" type="file" @change="handleAvatar" accept="image/*" style="display:none">
-                    更换
+                <div class="form-group"><label>个人简介</label><textarea v-model="settingsForm.site_bio" rows="3"></textarea></div>
+                <div class="form-group"><label>建站时间</label><input type="date" v-model="settingsForm.site_created_at"></div>
+                <div class="form-group"><label>友链标题</label><input v-model="settingsForm.links_title" placeholder="友链"></div>
+                <div class="form-group"><label>友链内容（名称,地址 每行一个）</label><textarea v-model="settingsForm.site_links" rows="4"></textarea></div>
+              </div>
+            </div>
+            <!-- 第二栏：其他设置 -->
+            <div style="flex:1;min-width:300px">
+              <div class="card">
+                <h3 style="color:#794f27;font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e8e0cc">模块与图标</h3>
+                <div class="form-group">
+                  <label>分类标题图标</label>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img v-if="settingsForm.category_icon && (settingsForm.category_icon.startsWith('http') || settingsForm.category_icon.startsWith('/'))" :src="settingsForm.category_icon" style="width:32px;height:32px;object-fit:cover">
+                      <span v-else-if="settingsForm.category_icon" style="font-size:20px">{{settingsForm.category_icon}}</span>
+                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                    </div>
                   </div>
-                  <button v-if="settingsForm.site_avatar" @click="settingsForm.site_avatar=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input v-model="settingsForm.category_icon" placeholder="输入emoji或图片地址" style="flex:1">
+                    <div @click="$refs.categoryIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
+                      <input ref="categoryIconInput" type="file" @change="handleCategoryIcon" accept="image/*" style="display:none">
+                      更换
+                    </div>
+                    <button v-if="settingsForm.category_icon" @click="settingsForm.category_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>友链标题图标</label>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img v-if="settingsForm.links_icon && (settingsForm.links_icon.startsWith('http') || settingsForm.links_icon.startsWith('/'))" :src="settingsForm.links_icon" style="width:32px;height:32px;object-fit:cover">
+                      <span v-else-if="settingsForm.links_icon" style="font-size:20px">{{settingsForm.links_icon}}</span>
+                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input v-model="settingsForm.links_icon" placeholder="输入emoji或图片地址" style="flex:1">
+                    <div @click="$refs.linksIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
+                      <input ref="linksIconInput" type="file" @change="handleLinksIcon" accept="image/*" style="display:none">
+                      更换
+                    </div>
+                    <button v-if="settingsForm.links_icon" @click="settingsForm.links_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>标签云图标</label>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img v-if="settingsForm.tag_cloud_icon && (settingsForm.tag_cloud_icon.startsWith('http') || settingsForm.tag_cloud_icon.startsWith('/'))" :src="settingsForm.tag_cloud_icon" style="width:32px;height:32px;object-fit:cover">
+                      <span v-else-if="settingsForm.tag_cloud_icon" style="font-size:20px">{{settingsForm.tag_cloud_icon}}</span>
+                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input v-model="settingsForm.tag_cloud_icon" placeholder="输入emoji或图片地址" style="flex:1">
+                    <div @click="$refs.tagCloudIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
+                      <input ref="tagCloudIconInput" type="file" @change="handleTagCloudIcon" accept="image/*" style="display:none">
+                      更换
+                    </div>
+                    <button v-if="settingsForm.tag_cloud_icon" @click="settingsForm.tag_cloud_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>标签云开关</label>
+                  <div class="radio-group">
+                    <label class="radio-item">
+                      <input type="radio" value="1" v-model="settingsForm.enable_tag_cloud">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">显示</span>
+                    </label>
+                    <label class="radio-item">
+                      <input type="radio" value="0" v-model="settingsForm.enable_tag_cloud">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">不显示</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>个人简介位置</label>
+                  <div class="radio-group">
+                    <label class="radio-item">
+                      <input type="radio" value="left" v-model="settingsForm.profile_position">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">居左</span>
+                    </label>
+                    <label class="radio-item">
+                      <input type="radio" value="right" v-model="settingsForm.profile_position">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">居右</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>标签云位置</label>
+                  <div class="radio-group">
+                    <label class="radio-item">
+                      <input type="radio" value="left" v-model="settingsForm.tag_cloud_position">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">居左</span>
+                    </label>
+                    <label class="radio-item">
+                      <input type="radio" value="right" v-model="settingsForm.tag_cloud_position">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">居右</span>
+                    </label>
+                  </div>
                 </div>
               </div>
-              <div class="form-group"><label>个人简介</label><textarea v-model="settingsForm.site_bio" rows="3"></textarea></div>
-              <div class="form-group"><label>建站时间</label><input type="date" v-model="settingsForm.site_created_at"></div>
-              <div class="form-group"><label>友链标题</label><input v-model="settingsForm.links_title" placeholder="友链"></div>
-              <div class="form-group">
-                <label>分类标题图标</label>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                  <span style="color:#9f927d;font-size:14px">预览：</span>
-                  <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                    <img v-if="settingsForm.category_icon && settingsForm.category_icon.startsWith('http')" :src="settingsForm.category_icon" style="width:32px;height:32px;object-fit:cover">
-                    <span v-else-if="settingsForm.category_icon" style="font-size:20px">{{settingsForm.category_icon}}</span>
-                    <span v-else style="color:#9f927d;font-size:12px">无</span>
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input v-model="settingsForm.category_icon" placeholder="输入emoji或图片地址" style="flex:1">
-                  <div @click="$refs.categoryIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                    <input ref="categoryIconInput" type="file" @change="handleCategoryIcon" accept="image/*" style="display:none">
-                    更换
-                  </div>
-                  <button v-if="settingsForm.category_icon" @click="settingsForm.category_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>友链标题图标</label>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                  <span style="color:#9f927d;font-size:14px">预览：</span>
-                  <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                    <img v-if="settingsForm.links_icon && settingsForm.links_icon.startsWith('http')" :src="settingsForm.links_icon" style="width:32px;height:32px;object-fit:cover">
-                    <span v-else-if="settingsForm.links_icon" style="font-size:20px">{{settingsForm.links_icon}}</span>
-                    <span v-else style="color:#9f927d;font-size:12px">无</span>
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input v-model="settingsForm.links_icon" placeholder="输入emoji或图片地址" style="flex:1">
-                  <div @click="$refs.linksIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                    <input ref="linksIconInput" type="file" @change="handleLinksIcon" accept="image/*" style="display:none">
-                    更换
-                  </div>
-                  <button v-if="settingsForm.links_icon" @click="settingsForm.links_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>标签云图标</label>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                  <span style="color:#9f927d;font-size:14px">预览：</span>
-                  <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                    <img v-if="settingsForm.tag_cloud_icon && settingsForm.tag_cloud_icon.startsWith('http')" :src="settingsForm.tag_cloud_icon" style="width:32px;height:32px;object-fit:cover">
-                    <span v-else-if="settingsForm.tag_cloud_icon" style="font-size:20px">{{settingsForm.tag_cloud_icon}}</span>
-                    <span v-else style="color:#9f927d;font-size:12px">无</span>
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input v-model="settingsForm.tag_cloud_icon" placeholder="输入emoji或图片地址" style="flex:1">
-                  <div @click="$refs.tagCloudIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                    <input ref="tagCloudIconInput" type="file" @change="handleTagCloudIcon" accept="image/*" style="display:none">
-                    更换
-                  </div>
-                  <button v-if="settingsForm.tag_cloud_icon" @click="settingsForm.tag_cloud_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>标签云开关</label>
-                <div class="radio-group">
-                  <label class="radio-item">
-                    <input type="radio" value="1" v-model="settingsForm.enable_tag_cloud">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">显示</span>
-                  </label>
-                  <label class="radio-item">
-                    <input type="radio" value="0" v-model="settingsForm.enable_tag_cloud">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">不显示</span>
-                  </label>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>个人简介位置</label>
-                <div class="radio-group">
-                  <label class="radio-item">
-                    <input type="radio" value="left" v-model="settingsForm.profile_position">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">居左</span>
-                  </label>
-                  <label class="radio-item">
-                    <input type="radio" value="right" v-model="settingsForm.profile_position">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">居右</span>
-                  </label>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>标签云位置</label>
-                <div class="radio-group">
-                  <label class="radio-item">
-                    <input type="radio" value="left" v-model="settingsForm.tag_cloud_position">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">居左</span>
-                  </label>
-                  <label class="radio-item">
-                    <input type="radio" value="right" v-model="settingsForm.tag_cloud_position">
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">居右</span>
-                  </label>
-                </div>
-              </div>
-              <div class="form-group"><label>友链内容（名称,地址 每行一个）</label><textarea v-model="settingsForm.site_links" rows="4"></textarea></div>
-              <button class="btn" @click="saveSettings" style="width:100%;margin-top:16px">保存设置</button>
             </div>
           </div>
         </div>
