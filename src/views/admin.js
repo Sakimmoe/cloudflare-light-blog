@@ -681,7 +681,7 @@ export function getAdminHTML() {
       <div v-if="confirmModal.show" class="modal" @click.self="confirmModal.show=false">
         <div class="modal-box">
           <h3 style="color:#794f27;margin-bottom:12px">{{confirmModal.title}}</h3>
-          <p style="margin-bottom:16px">{{confirmModal.message}}</p>
+          <p style="margin-bottom:16px" v-html="confirmModal.message"></p>
           <div v-if="confirmModal.checkbox" style="margin-bottom:20px;display:flex;align-items:center;gap:8px;justify-content:center">
             <input type="checkbox" id="confirmCheckbox" v-model="confirmModal.checkboxValue" style="width:16px;height:16px;cursor:pointer">
             <label for="confirmCheckbox" style="cursor:pointer;color:#725d42;font-size:14px">{{confirmModal.checkboxLabel}}</label>
@@ -839,7 +839,7 @@ export function getAdminHTML() {
             // 找到当前置顶文章的标题
             const pinnedPost = posts.value.find(p => p.id == currentPinnedId.value);
             const pinnedTitle = pinnedPost ? pinnedPost.title : '未知文章';
-            const { confirmed } = await showConfirm('取消置顶', '确定取消置顶文章？\n\n文章编号：' + currentPinnedId.value + '\n文章标题：' + pinnedTitle);
+            const { confirmed } = await showConfirm('取消置顶', '确定取消置顶文章？<br><br>文章编号：' + currentPinnedId.value + '<br>文章标题：' + pinnedTitle);
             if (!confirmed) return;
             try {
               await api('/api/settings', { method: 'POST', data: { pinned_post_id: '' } });
@@ -866,7 +866,7 @@ export function getAdminHTML() {
               return;
             }
             
-            const { confirmed } = await showConfirm('置顶文章', '确定置顶文章？\n\n文章编号：' + id + '\n文章标题：' + post.title);
+            const { confirmed } = await showConfirm('置顶文章', '确定置顶文章？<br><br>文章编号：' + id + '<br>文章标题：' + post.title);
             if (!confirmed) return;
             
             await api('/api/settings', { method: 'POST', data: { pinned_post_id: id } });
