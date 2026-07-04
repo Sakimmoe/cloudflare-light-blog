@@ -138,11 +138,13 @@ export function getPostHTML(post, settings) {
         <div id="category-list" class="category-list"></div>
         <h4>${settings.links_icon ? (settings.links_icon.startsWith('http') || settings.links_icon.startsWith('/images/') ? '<img src="' + escapeHtml(settings.links_icon) + '" style="width:18px;height:18px;vertical-align:middle;margin-right:4px">' : settings.links_icon + ' ') : '🔗 '}${escapeHtml(settings.links_title || '友链')}</h4>
         <div id="link-list" class="link-list"></div>
-        ${settings.enable_tag_cloud !== '0' && settings.tag_cloud_position === 'left' ? `
+      </div>
+      ${settings.enable_tag_cloud !== '0' && settings.tag_cloud_position === 'left' ? `
+      <div class="profile-card" style="margin-top:16px">
         <h4>${settings.tag_cloud_icon ? (settings.tag_cloud_icon.startsWith('http') || settings.tag_cloud_icon.startsWith('/images/') ? '<img src="' + escapeHtml(settings.tag_cloud_icon) + '" style="width:18px;height:18px;vertical-align:middle;margin-right:4px">' : settings.tag_cloud_icon + ' ') : '🏷️ '}标签云</h4>
         <div id="tag-cloud" class="tag-cloud" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 0"></div>
-        ` : ''}
       </div>
+      ` : ''}
     </aside>
     <div class="content-area" ${settings.profile_position === 'right' ? 'style="order:1"' : ''}>
       ${settings.enable_tag_cloud !== '0' && settings.tag_cloud_position === 'right' ? `
