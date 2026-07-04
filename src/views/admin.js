@@ -42,6 +42,10 @@ export function getAdminHTML() {
     .btn-cancel:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c4b89e; }
     .btn-back { background: linear-gradient(135deg, #7DC395, #5BAF7A); color: #fff; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 0 0 #4a9a68; padding: 8px 20px; font-size: 14px; }
     .btn-back:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #4a9a68; }
+    .btn-import { background: linear-gradient(135deg, #f0b27a, #e67e22); box-shadow: 0 4px 0 0 #d35400; }
+    .btn-import:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #d35400; }
+    .btn-pin { background: linear-gradient(135deg, #ffd700, #ffa500); box-shadow: 0 4px 0 0 #cc8400; color: #725d42; }
+    .btn-pin:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #cc8400; }
     .card { background: var(--card-bg, #f7f3df); border-radius: 20px; padding: 24px; box-shadow: 0 4px 10px rgba(107,92,67,0.42); border: 2px solid var(--card-border, #e8e0cc); margin-bottom: 16px; }
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #794f27; }
@@ -277,7 +281,17 @@ export function getAdminHTML() {
           <!-- 文章列表 -->
           <div v-if="!editingId">
           <div class="page-header"><h2>文章管理</h2></div>
-          <button class="btn" @click="openAdd()" style="margin-bottom:16px">新建文章</button>
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <button class="btn" @click="openAdd()">新建文章</button>
+            <button class="btn btn-import" @click="showImportModal=true">导入文章</button>
+            <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
+              <input v-model="pinnedPostId" placeholder="输入文章ID" style="width:120px;padding:8px 12px;border:2px solid #c4b89e;border-radius:50px;font-size:14px;background:#f8f8f0;color:#725d42">
+              <button class="btn btn-pin" @click="setPinnedPost">{{pinnedPostId ? '取消置顶' : '置顶文章'}}</button>
+            </div>
+          </div>
+          <div v-if="currentPinnedId" style="margin-bottom:12px;padding:8px 16px;background:#fff3cd;border:2px solid #ffc107;border-radius:12px;color:#856404;font-size:14px;font-weight:600">
+            📌 当前置顶文章ID: {{currentPinnedId}}
+          </div>
           <div class="w-60"><div class="card" style="padding:0;overflow:hidden">
             <table style="width:100%;border-collapse:collapse">
               <thead>
@@ -298,7 +312,9 @@ export function getAdminHTML() {
                     <td style="padding:14px 16px;text-align:center;white-space:nowrap"><button class="delete" @click="deletePost(post.id)" style="padding:5px 14px;border:none;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap">删除</button></td>
                     <td style="padding:14px 16px;text-align:center;white-space:nowrap"><button class="edit" @click="toggleEdit(post)" style="padding:5px 14px;border:none;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap">编辑</button></td>
                     <td style="padding:14px 16px;text-align:center;color:#9f927d;font-size:14px">#{{post.id}}</td>
-                    <td style="padding:14px 16px;color:#794f27;font-weight:600;font-size:16px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{post.title}}</td>
+                    <td style="padding:14px 16px;color:#794f27;font-weight:600;font-size:16px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                      <span v-if="currentPinnedId == post.id" style="color:#ff6b00;margin-right:4px" title="已置顶">📌</span>{{post.title}}
+                    </td>
                     <td style="padding:14px 16px;color:#9f927d;font-size:15px;white-space:nowrap">{{post.category}}</td>
                     <td style="padding:14px 16px;text-align:center;white-space:nowrap"><span :style="{display:'inline-block',width:'8px',height:'8px',borderRadius:'50%',background:post.status==='published'?'#22c55e':'#9f927d',marginRight:'6px',verticalAlign:'middle'}"></span><span style="font-size:15px;color:#725d42;vertical-align:middle">{{post.status==='published'?'已发布':'草稿'}}</span></td>
                     <td style="padding:14px 16px;text-align:right;color:#9f927d;font-size:15px">{{new Date(post.published_at || post.created_at).toLocaleDateString('zh-CN')}}</td>
@@ -637,6 +653,31 @@ export function getAdminHTML() {
           </div>
         </div>
       </div>
+      <!-- 导入弹窗 -->
+      <div v-if="showImportModal" class="modal" @click.self="showImportModal=false">
+        <div class="modal-box" style="max-width:500px">
+          <h3 style="color:#794f27;margin-bottom:12px">导入文章</h3>
+          <p style="margin-bottom:16px;color:#725d42;font-size:14px">支持 WordPress 导出的 XML 文件</p>
+          <div style="margin-bottom:16px">
+            <input type="file" ref="importFile" accept=".xml" style="display:none" @change="handleImportFile">
+            <button class="btn" @click="$refs.importFile.click()" style="width:100%">选择 XML 文件</button>
+          </div>
+          <div v-if="importFileName" style="margin-bottom:16px;padding:12px;background:#f8f8f0;border-radius:12px;border:2px solid #e8e0cc">
+            <p style="color:#725d42;font-size:14px">已选择: {{importFileName}}</p>
+          </div>
+          <div v-if="importResult" style="margin-bottom:16px;padding:12px;background:#f8f8f0;border-radius:12px;border:2px solid #e8e0cc">
+            <p style="color:#725d42;font-size:14px;margin-bottom:8px">导入结果:</p>
+            <p style="color:#6fba2c;font-size:14px">成功: {{importResult.success}} 篇</p>
+            <p v-if="importResult.failed > 0" style="color:#e05a5a;font-size:14px">失败: {{importResult.failed}} 篇</p>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center">
+            <button class="btn btn-cancel" @click="showImportModal=false;importFileName='';importResult=null">关闭</button>
+            <button class="btn" @click="importPosts" :disabled="!importFileName || importing">
+              {{importing ? '导入中...' : '开始导入'}}
+            </button>
+          </div>
+        </div>
+      </div>
       <div v-if="confirmModal.show" class="modal" @click.self="confirmModal.show=false">
         <div class="modal-box">
           <h3 style="color:#794f27;margin-bottom:12px">{{confirmModal.title}}</h3>
@@ -674,6 +715,15 @@ export function getAdminHTML() {
         const editingCategory = ref(null);
         const trashPosts = ref([]);
         const confirmModal = ref({ show: false, title: '', message: '', onConfirm: null });
+        // 导入相关状态
+        const showImportModal = ref(false);
+        const importFileName = ref('');
+        const importFileData = ref(null);
+        const importing = ref(false);
+        const importResult = ref(null);
+        // 置顶相关状态
+        const pinnedPostId = ref('');
+        const currentPinnedId = ref('');
         const check = () => { const t = localStorage.getItem('token'); if (t) { logged.value = true; currentPage.value = localStorage.getItem('adminPage') || 'posts'; loadPosts(); loadCategories(); loadSettings(); loadTrash(); } };
         const api = (url, o = {}) => {
           o.headers = o.headers || {};
@@ -690,7 +740,7 @@ export function getAdminHTML() {
         const logout = () => { localStorage.removeItem('token'); logged.value = false; };
         const loadPosts = async () => { try { const r = await api('/api/admin/posts'); posts.value = r.data; } catch (e) { showToast('加载文章失败'); } };
         const loadCategories = async () => { try { const r = await api('/api/categories'); categories.value = r.data; } catch (e) { showToast('加载分类失败'); } };
-        const loadSettings = async () => { try { const r = await api('/api/settings'); settingsForm.value = { site_name: r.data.site_name || '', site_description: r.data.site_description || '', site_favicon: r.data.site_favicon || '', site_avatar: r.data.site_avatar || '', site_bio: r.data.site_bio || '', site_links: r.data.site_links || '', site_author: r.data.site_author || '', site_footer: r.data.site_footer || '', custom_js: r.data.custom_js || '', site_theme: r.data.site_theme || 'animal-forest', allow_robots: r.data.allow_robots || '1', enable_compression: r.data.enable_compression || '1', links_title: r.data.links_title || '友链', site_created_at: r.data.site_created_at || '2020-02-02', site_password: r.data.site_password || '', allowed_origins: r.data.allowed_origins || '*', category_icon: r.data.category_icon || '📂', links_icon: r.data.links_icon || '🔗', tag_cloud_icon: r.data.tag_cloud_icon || '🏷️', enable_tag_cloud: r.data.enable_tag_cloud || '1', profile_position: r.data.profile_position || 'left', tag_cloud_position: r.data.tag_cloud_position || 'left' }; applyTheme(); } catch (e) { showToast('加载设置失败'); } };
+        const loadSettings = async () => { try { const r = await api('/api/settings'); settingsForm.value = { site_name: r.data.site_name || '', site_description: r.data.site_description || '', site_favicon: r.data.site_favicon || '', site_avatar: r.data.site_avatar || '', site_bio: r.data.site_bio || '', site_links: r.data.site_links || '', site_author: r.data.site_author || '', site_footer: r.data.site_footer || '', custom_js: r.data.custom_js || '', site_theme: r.data.site_theme || 'animal-forest', allow_robots: r.data.allow_robots || '1', enable_compression: r.data.enable_compression || '1', links_title: r.data.links_title || '友链', site_created_at: r.data.site_created_at || '2020-02-02', site_password: r.data.site_password || '', allowed_origins: r.data.allowed_origins || '*', category_icon: r.data.category_icon || '📂', links_icon: r.data.links_icon || '🔗', tag_cloud_icon: r.data.tag_cloud_icon || '🏷️', enable_tag_cloud: r.data.enable_tag_cloud || '1', profile_position: r.data.profile_position || 'left', tag_cloud_position: r.data.tag_cloud_position || 'left' }; currentPinnedId.value = r.data.pinned_post_id || ''; applyTheme(); } catch (e) { showToast('加载设置失败'); } };
         const loadTrash = async () => { try { const r = await api('/api/admin/trash'); trashPosts.value = r.data; } catch (e) { showToast('加载回收站失败'); } };
         const showToast = (m) => { toast.value = m; setTimeout(() => toast.value = '', 2000); };
         const showConfirm = (t, m, options = {}) => new Promise(r => {
@@ -780,6 +830,50 @@ export function getAdminHTML() {
           setTimeout(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + insert.length; }, 0);
         };
 
+        // 置顶文章方法
+        const setPinnedPost = async () => {
+          const id = pinnedPostId.value.trim();
+          
+          // 如果当前有置顶文章，点击按钮为取消置顶
+          if (currentPinnedId.value) {
+            const { confirmed } = await showConfirm('取消置顶', '确定取消置顶文章？');
+            if (!confirmed) return;
+            try {
+              await api('/api/settings', { method: 'POST', data: { pinned_post_id: '' } });
+              currentPinnedId.value = '';
+              pinnedPostId.value = '';
+              showToast('已取消置顶');
+            } catch (e) {
+              showToast('操作失败');
+            }
+            return;
+          }
+          
+          // 验证文章 ID
+          if (!id || isNaN(id)) {
+            alert('请输入有效的文章 ID');
+            return;
+          }
+          
+          // 验证文章是否存在
+          try {
+            const post = posts.value.find(p => p.id == id);
+            if (!post) {
+              alert('文章不存在，请检查 ID');
+              return;
+            }
+            
+            const { confirmed } = await showConfirm('置顶文章', '确定置顶文章：' + post.title + '？');
+            if (!confirmed) return;
+            
+            await api('/api/settings', { method: 'POST', data: { pinned_post_id: id } });
+            currentPinnedId.value = id;
+            showToast('置顶成功');
+          } catch (e) {
+            showToast('置顶失败');
+          }
+        };
+
         // 主题配置
         const themes = {
           'animal-forest': {
@@ -865,9 +959,47 @@ export function getAdminHTML() {
           });
         };
 
+        // 导入相关方法
+        const handleImportFile = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          if (!file.name.endsWith('.xml')) {
+            alert('请选择 XML 文件');
+            return;
+          }
+          importFileName.value = file.name;
+          importFileData.value = await file.text();
+          importResult.value = null;
+        };
+
+        const importPosts = async () => {
+          if (!importFileData.value) {
+            alert('请先选择文件');
+            return;
+          }
+          importing.value = true;
+          try {
+            const r = await api('/api/admin/import-wordpress', {
+              method: 'POST',
+              data: { xml: importFileData.value },
+              headers: { 'Content-Type': 'application/json' }
+            });
+            importResult.value = r.data;
+            loadPosts();
+            loadCategories();
+            if (r.data.failed === 0) {
+              showToast('导入完成');
+            }
+          } catch (e) {
+            alert('导入失败: ' + (e.response ? e.response.data.error : e.message));
+          } finally {
+            importing.value = false;
+          }
+        };
+
         watch(currentPage, (v) => { localStorage.setItem('adminPage', v); });
         onMounted(() => { check(); document.addEventListener('click', closeAllSelects); });
-        return { logged, username, password, login, logout, posts, editingId, form, coverPreview, toast, openAdd, cancelNewPost, toggleEdit, handleCoverChange, handleCoverDrop, handleDrop, deleteCover, savePost, deletePost, categories, currentPage, postPage, postPageSize, categoryForm, saveCategory, deleteCategory, editCategory, editingCategory, settingsForm, saveSettings, handleFavicon, handleFaviconDrop, handleAvatar, handleAvatarDrop, handleCategoryIcon, handleLinksIcon, handleTagCloudIcon, trashPosts, restorePost, permanentDelete, confirmModal, showConfirm, insertMd, applyTheme, customSelects, toggleSelect, selectOption, getSelectLabel };
+        return { logged, username, password, login, logout, posts, editingId, form, coverPreview, toast, openAdd, cancelNewPost, toggleEdit, handleCoverChange, handleCoverDrop, handleDrop, deleteCover, savePost, deletePost, categories, currentPage, postPage, postPageSize, categoryForm, saveCategory, deleteCategory, editCategory, editingCategory, settingsForm, saveSettings, handleFavicon, handleFaviconDrop, handleAvatar, handleAvatarDrop, handleCategoryIcon, handleLinksIcon, handleTagCloudIcon, trashPosts, restorePost, permanentDelete, confirmModal, showConfirm, insertMd, applyTheme, customSelects, toggleSelect, selectOption, getSelectLabel, showImportModal, importFileName, importFileData, importing, importResult, handleImportFile, importPosts, pinnedPostId, currentPinnedId, setPinnedPost };
       }
     }).mount('#app');
   <\/script>

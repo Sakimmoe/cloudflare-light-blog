@@ -125,7 +125,8 @@ export async function initDB(env) {
       ['tag_cloud_icon', '🏷️'],
       ['enable_tag_cloud', '1'],
       ['profile_position', 'left'],
-      ['tag_cloud_position', 'left']
+      ['tag_cloud_position', 'left'],
+      ['pinned_post_id', '']
     ];
 
     // 逐条插入默认设置（避免 D1 batch 10条限制）

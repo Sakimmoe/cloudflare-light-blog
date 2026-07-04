@@ -243,7 +243,9 @@ export async function handleAPI(request, env, path) {
     if (path === '/api/admin/permanent-delete' && method === 'POST') {
       return handlePermanentDelete(request, env);
     }
-
+    if (path === '/api/admin/import-wordpress' && method === 'POST') {
+      return handleImportWordPress(request, env);
+    }
 
     // 分类管理
     if (path === '/api/category' && method === 'POST') {
@@ -315,8 +317,15 @@ async function handleGetPosts(request, env) {
     `SELECT id, title, slug, excerpt, cover_image, category, tags, view_count, created_at, password FROM posts ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`
   ).bind(...params, limit, offset).all();
 
+  // 获取置顶文章 ID
+  const pinnedSetting = await env.DB.prepare(
+    "SELECT value FROM settings WHERE key='pinned_post_id'"
+  ).first();
+  const pinned_post_id = pinnedSetting?.value || '';
+
   const resp = json({
     data: results,
+    pinned_post_id,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
   });
   resp.headers.set('Cache-Control', 'public, max-age=60');
@@ -624,5 +633,126 @@ async function handleDeleteImage(request, env) {
   } catch (e) {
     console.error('[API] 删除图片失败:', e);
     return json({ success: false, error: '删除图片失败: ' + e.message }, 500);
+  }
+}
+
+/**
+ * 导入 WordPress 文章
+ */
+async function handleImportWordPress(request, env) {
+  try {
+    const { xml } = await request.json();
+    if (!xml) return json({ success: false, error: '缺少 XML 数据' }, 400);
+
+    // 解析 XML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    
+    // 检查解析错误
+    const parseError = doc.querySelector('parsererror');
+    if (parseError) {
+      return json({ success: false, error: 'XML 格式错误' }, 400);
+    }
+
+    const items = doc.querySelectorAll('item');
+    let success = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (const item of items) {
+      try {
+        // 只导入文章类型
+        const postType = item.getElementsByTagName('wp:post_type')[0]?.textContent;
+        if (postType !== 'post') continue;
+
+        const title = item.getElementsByTagName('title')[0]?.textContent || '';
+        const content = item.getElementsByTagName('content:encoded')[0]?.textContent || '';
+        const excerpt = item.getElementsByTagName('excerpt:encoded')[0]?.textContent || '';
+        const wpStatus = item.getElementsByTagName('wp:status')[0]?.textContent || 'draft';
+        const wpPostName = item.getElementsByTagName('wp:post_name')[0]?.textContent || '';
+        const wpPostDate = item.getElementsByTagName('wp:post_date')[0]?.textContent || '';
+
+        // 获取分类
+        const categories = [];
+        const tags = [];
+        const categoryElements = item.querySelectorAll('category');
+        categoryElements.forEach(cat => {
+          const domain = cat.getAttribute('domain');
+          const name = cat.textContent;
+          if (domain === 'category' && name) {
+            categories.push(name);
+          } else if (domain === 'post_tag' && name) {
+            tags.push(name);
+          }
+        });
+
+        // 生成 slug
+        let slug = wpPostName || generateSlug(title);
+        // 确保 slug 唯一性（添加随机后缀以防冲突）
+        slug = slug + '-' + Math.random().toString(36).substring(2, 7);
+
+        // 确定状态
+        let status = 'draft';
+        if (wpStatus === 'publish') status = 'published';
+        else if (wpStatus === 'draft') status = 'draft';
+        else if (wpStatus === 'private') status = 'draft';
+
+        // 处理日期
+        const now = new Date().toISOString();
+        let publishedAt = null;
+        if (wpPostDate) {
+          try {
+            publishedAt = new Date(wpPostDate.replace(' ', 'T')).toISOString();
+          } catch (e) {}
+        }
+
+        // 创建文章分类（如果不存在）
+        for (const catName of categories) {
+          const existingCat = await env.DB.prepare(
+            "SELECT id FROM categories WHERE name=?"
+          ).bind(catName).first();
+          
+          if (!existingCat) {
+            const catSlug = generateSlug(catName);
+            await env.DB.prepare(
+              "INSERT INTO categories (name, slug, description) VALUES (?, ?, '')"
+            ).bind(catName, catSlug).run();
+          }
+        }
+
+        // 插入文章
+        await env.DB.prepare(`
+          INSERT INTO posts (title, slug, content, excerpt, category, tags, status, created_at, updated_at, published_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          title,
+          slug,
+          content,
+          excerpt || (content ? content.substring(0, 200) : ''),
+          categories[0] || '未分类',
+          tags.join(', '),
+          status,
+          publishedAt || now,
+          now,
+          publishedAt
+        ).run();
+
+        success++;
+      } catch (e) {
+        failed++;
+        errors.push(e.message);
+        console.error('[Import] 导入文章失败:', e);
+      }
+    }
+
+    return json({ 
+      success, 
+      failed, 
+      total: items.length,
+      errors: errors.length > 0 ? errors.slice(0, 5) : undefined
+    });
+  } catch (e) {
+    console.error('[API] 导入失败:', e);
+    return json({ success: false, error: '导入失败: ' + e.message }, 500);
   }
 }

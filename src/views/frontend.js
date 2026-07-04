@@ -229,9 +229,19 @@ export function getFrontendHTML(settings) {
 
       fetch(apiUrl).then(function(r){return r.json()}).then(function(res) {
         var posts = res.data || [];
+        var pinned_post_id = res.pinned_post_id || '';
         var pagination = res.pagination || {};
         var app = document.getElementById('app');
         var html = '';
+
+        // 将置顶文章移到列表最前面
+        if (pinned_post_id && page === 1) {
+          var pinnedIndex = posts.findIndex(function(p) { return String(p.id) === String(pinned_post_id); });
+          if (pinnedIndex > 0) {
+            var pinnedPost = posts.splice(pinnedIndex, 1)[0];
+            posts.unshift(pinnedPost);
+          }
+        }
 
         if (currentCategory) {
           html += '<div style="margin-bottom:16px"><a href="/" style="display:inline-block;padding:8px 20px;background:#19c8b9;color:#fff;text-decoration:none;border-radius:50px;font-weight:600;font-size:0.9em;box-shadow:0 4px 0 0 #11a89b">← 返回首页</a> <span id="current-cat" style="color:#794f27;font-weight:600;margin-left:8px"></span></div>';
@@ -258,6 +268,7 @@ export function getFrontendHTML(settings) {
 
         var formatDate = function(d) { var dt = new Date(d); return dt.getFullYear() + String(dt.getMonth()+1).padStart(2,'0'); };
         html += posts.map(function(post) {
+          var isPinned = String(post.id) === String(pinned_post_id);
           var cover = post.cover_image ? '<img src="' + post.cover_image + '" alt="' + post.title + '" loading="lazy">' : '<span style="color:#9f927d">封面</span>';
           var tags = post.tags ? post.tags.split(',').map(function(t) {
             return '<span style="display:inline-block;padding:3px 10px;background:#e6f5f0;color:#3a7a6a;font-size:0.72em;font-weight:700;margin-right:8px;border:1px solid #b8ddd0;border-radius:4px;box-shadow:1px 2px 3px rgba(58,122,106,0.12)">' + t.trim() + '</span>';
@@ -265,10 +276,11 @@ export function getFrontendHTML(settings) {
           function stripHtml(str) { return str ? str.split('<').join('').split('>').join('').split('&lt;').join('<').split('&gt;').join('>').split('&amp;').join('&').substring(0, 80) : ''; }
           var rawText = post.excerpt || post.content || '';
           var excerpt = post.password ? '🔒 该文章受到密码保护' : stripHtml(rawText) + (rawText.length > 80 ? '...' : '');
-          return '<article class="post-card">' +
+          var pinBadge = isPinned ? '<span style="display:inline-block;padding:2px 8px;background:linear-gradient(135deg,#ffd700,#ffa500);color:#725d42;font-size:0.7em;font-weight:700;border-radius:50px;margin-right:8px;box-shadow:0 2px 0 #cc8400">📌 置顶</span>' : '';
+          return '<article class="post-card"' + (isPinned ? ' style="border:2px solid #ffd700;box-shadow:0 4px 16px rgba(255,215,0,0.3)"' : '') + '>' +
             '<div class="post-cover">' + cover + '</div>' +
             '<div class="post-content">' +
-              '<h2><a href="/post/' + formatDate(post.created_at) + '/' + post.id + '">' + post.title + '</a></h2>' +
+              '<h2>' + pinBadge + '<a href="/post/' + formatDate(post.created_at) + '/' + post.id + '">' + post.title + '</a></h2>' +
               '<p style="color:#725d42;font-size:0.9em;line-height:1.7;margin:8px 0">' + excerpt + '</p>' +
               (tags ? '<div style="margin:8px 0 0">' + tags + '</div>' : '') +
               '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">' +
