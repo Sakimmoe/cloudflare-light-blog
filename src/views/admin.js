@@ -24,7 +24,7 @@ export function getAdminHTML() {
     .login-box input:focus { border-color: #ffcc00; box-shadow: 0 3px 0 0 #e0b800; }
     .login-box button { width: 100%; padding: 14px; background: #19c8b9; color: #fff; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 5px 0 0 #11a89b; }
     .admin-layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 240px; background: var(--sidebar-bg, linear-gradient(180deg, #7DC395, #5BAF7A)); color: #fff; flex-shrink: 0; }
+    .sidebar { width: 240px; background: var(--sidebar-bg, #8ac68a); color: #fff; flex-shrink: 0; }
     .sidebar-header { padding: 24px 20px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2); }
     .sidebar-header h1 { font-size: 18px; }
     .sidebar-menu { padding: 16px 12px; }
@@ -43,10 +43,10 @@ export function getAdminHTML() {
     .btn-cancel:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c4b89e; }
     .btn-back { background: linear-gradient(135deg, #7DC395, #5BAF7A); color: #fff; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 0 0 #4a9a68; padding: 8px 20px; font-size: 14px; }
     .btn-back:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #4a9a68; }
-    .btn-import { background: #19c8b9; box-shadow: 0 4px 0 0 #11a89b; }
-    .btn-import:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #11a89b; }
-    .btn-pin { background: #f7cd67; box-shadow: 0 4px 0 0 #d4a800; color: #725d42; }
-    .btn-pin:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #d4a800; }
+    .btn-import { background: #e18c6f; box-shadow: 0 4px 0 0 #c47a5e; }
+    .btn-import:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c47a5e; }
+    .btn-pin { background: #b77dee; box-shadow: 0 4px 0 0 #9a5fd6; color: #fff; }
+    .btn-pin:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #9a5fd6; }
     /* 美化单选按钮样式 */
     .radio-group { display: flex; gap: 12px; margin-top: 8px; }
     .radio-item { position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; }
@@ -121,10 +121,10 @@ export function getAdminHTML() {
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .actions { display: flex; gap: 6px; }
     .actions button { padding: 6px 14px; border: none; border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .actions .edit, .edit { background: #19c8b9; color: #fff; box-shadow: 0 3px 0 0 #11a89b; }
-    .actions .edit:hover, .edit:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #11a89b; }
-    .actions .delete, .delete { background: #e05a5a; color: #fff; box-shadow: 0 3px 0 0 #c94444; }
-    .actions .delete:hover, .delete:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #c94444; }
+    .actions .edit, .edit { background: #889df0; color: #fff; box-shadow: 0 3px 0 0 #6b82e0; }
+    .actions .edit:hover, .edit:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #6b82e0; }
+    .actions .delete, .delete { background: #fc736d; color: #fff; box-shadow: 0 3px 0 0 #e05a54; }
+    .actions .delete:hover, .delete:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #e05a54; }
     .editor-layout { display: flex; gap: 20px; align-items: stretch; }
     .editor-main { flex: 3; }
     .editor-side { flex: 1; }
@@ -915,8 +915,8 @@ export function getAdminHTML() {
         const themes = {
           'animal-forest': {
             name: '动物森林',
-            headerBg: 'linear-gradient(180deg, #7DC395 0%, #5BAF7A 100%)',
-            sidebarBg: 'linear-gradient(180deg, #7DC395, #5BAF7A)',
+            headerBg: 'linear-gradient(180deg, #8ac68a 0%, #6fba2c 100%)',
+            sidebarBg: '#8ac68a',
             btnBg: '#19c8b9',
             btnShadow: '#11a89b',
             dangerBg: '#e05a5a',
@@ -933,7 +933,7 @@ export function getAdminHTML() {
           'ocean-breeze': {
             name: '海洋微风',
             headerBg: 'linear-gradient(180deg, #4ECDC4 0%, #2C9C93 100%)',
-            sidebarBg: 'linear-gradient(180deg, #4ECDC4, #2C9C93)',
+            sidebarBg: '#4ECDC4',
             btnBg: '#4ECDC4',
             btnShadow: '#2C9C93',
             dangerBg: '#E74C3C',
