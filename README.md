@@ -136,8 +136,25 @@ src/
     ├── post.js            # 文章详情页（Markdown、代码高亮、灯箱、SEO、懒加载）
     ├── password.js        # 密码验证页（API 认证、速率限制）
     └── admin.js           # 后台管理页（Vue 3、响应式、SRI）
+public/icon/               # 静态图标资源（随项目部署）
 wrangler.toml              # Cloudflare 配置
 ```
+
+### 图标资源说明
+
+`public/icon/` 目录下的图片文件用途如下：
+
+| 文件名 | 用途 |
+|--------|------|
+| `home.png` | 后台管理标题前置图标 |
+| `navigate.png` | 导航栏选中项指示器 |
+| `logout.png` | 退出登录按钮前置图标 |
+| `profile.png` | 个人头像 |
+| `favicon.ico` | 网站图标 |
+| `category.png` | 分类标题图标 |
+| `friend-links.png` | 友链标题图标 |
+
+> 替换对应的图片文件即可自定义图标，无需修改代码。
 
 ## 部署步骤
 
