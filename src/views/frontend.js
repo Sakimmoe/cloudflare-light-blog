@@ -207,7 +207,7 @@ export function getFrontendHTML(settings) {
             });
           }
         });
-        var tags = Object.keys(tagMap);
+        var tags = Object.keys(tagMap).slice(0, 18); // 最多18个标签
         if (tags.length > 0) {
           var colors = [
             { bg: '#f8a6b2', color: '#fff', border: '#f8a6b2' },  // app-pink
@@ -220,8 +220,25 @@ export function getFrontendHTML(settings) {
             { bg: '#fc736d', color: '#fff', border: '#fc736d' },  // app-red
             { bg: '#e18c6f', color: '#fff', border: '#e18c6f' }   // warm-peach-pink
           ];
+          // 颜色分配：最多2个标签同色
+          var colorCount = {};
+          var shuffled = colors.slice().sort(function(){return 0.5 - Math.random()});
+          var colorIndex = 0;
           tagCloudEl.innerHTML = tags.map(function(tag) {
-            var c = colors[Math.floor(Math.random() * colors.length)];
+            // 找一个使用次数<2的颜色
+            while (colorIndex < shuffled.length * 2) {
+              var c = shuffled[colorIndex % shuffled.length];
+              var key = c.bg;
+              if (!colorCount[key]) colorCount[key] = 0;
+              if (colorCount[key] < 2) {
+                colorCount[key]++;
+                colorIndex++;
+                return '<a href="/?tag=' + encodeURIComponent(tag) + '" class="tag-item" style="display:inline-block;padding:5px 14px;background:' + c.bg + ';color:' + c.color + ';border:1.5px solid ' + c.border + ';border-radius:50px;text-decoration:none;white-space:nowrap;font-size:13px;font-weight:600;transition:all 0.25s ease;cursor:pointer">' + tag + '</a>';
+              }
+              colorIndex++;
+            }
+            // fallback
+            var c = shuffled[0];
             return '<a href="/?tag=' + encodeURIComponent(tag) + '" class="tag-item" style="display:inline-block;padding:5px 14px;background:' + c.bg + ';color:' + c.color + ';border:1.5px solid ' + c.border + ';border-radius:50px;text-decoration:none;white-space:nowrap;font-size:13px;font-weight:600;transition:all 0.25s ease;cursor:pointer">' + tag + '</a>';
           }).join('');
         } else {

@@ -290,12 +290,6 @@ async function handleGetPosts(request, env) {
   const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit')) || 10));
   const offset = (page - 1) * limit;
 
-  // 缓存 60 秒
-  const cache = caches.default;
-  const cacheKey = new Request(url.toString(), { method: 'GET' });
-  const cached = await cache.match(cacheKey);
-  if (cached) return cached;
-
   let where = "WHERE status='published'";
   const params = [];
 
@@ -331,10 +325,6 @@ async function handleGetPosts(request, env) {
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
   });
   resp.headers.set('Cache-Control', 'public, max-age=60');
-  const cloned = resp.clone();
-  if (typeof ctx !== 'undefined' && ctx.waitUntil) {
-    ctx.waitUntil(cache.put(cacheKey, cloned));
-  }
   return resp;
 }
 
