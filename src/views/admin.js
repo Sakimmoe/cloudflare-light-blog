@@ -9,6 +9,7 @@ export function getAdminHTML() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>博客管理后台</title>
+  <link rel="icon" href="/icon/favicon.ico">
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js" crossorigin="anonymous"><\/script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" crossorigin="anonymous"><\/script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -281,7 +282,7 @@ export function getAdminHTML() {
     </div>
     <div v-else class="admin-layout">
       <nav class="sidebar" role="navigation" aria-label="主导航">
-        <div class="sidebar-header"><h1><img src="/icon/home.png" alt="" class="sidebar-header-icon">管理后台</h1></div>
+        <div class="sidebar-header"><h1><img src="/icon/dashboard.png" alt="" class="sidebar-header-icon">管理后台</h1></div>
         <div class="sidebar-menu" role="menubar">
           <a href="#" role="menuitem" :class="{active:currentPage==='posts'}" @click.prevent="currentPage='posts'" aria-label="文章管理"><span v-if="currentPage==='posts'" class="nav-icon"><img src="/icon/navigate.png" alt=""></span>文章管理</a>
           <a href="#" role="menuitem" :class="{active:currentPage==='category'}" @click.prevent="currentPage='category'" aria-label="分类管理"><span v-if="currentPage==='category'" class="nav-icon"><img src="/icon/navigate.png" alt=""></span>分类管理</a>
@@ -526,7 +527,22 @@ export function getAdminHTML() {
                     <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/favicon.ico</code> 文件即可更换</span>
                   </div>
                 </div>
-                <div class="form-group"><label>置顶文章编号（留空则不置顶）</label><input v-model="settingsForm.pinned_post_id" type="number" min="0" step="1" placeholder="输入单个文章ID" @input="settingsForm.pinned_post_id = settingsForm.pinned_post_id.replace(/[^0-9]/g, '')"></div>
+                <div class="form-group">
+                  <label>置顶文章（输入编号）</label>
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <label class="radio-item" style="margin:0">
+                      <input type="radio" value="" v-model="settingsForm.pinnedType">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">无</span>
+                    </label>
+                    <label class="radio-item" style="margin:0">
+                      <input type="radio" value="has" v-model="settingsForm.pinnedType">
+                      <span class="radio-custom"></span>
+                      <span class="radio-label">有</span>
+                    </label>
+                    <input v-if="settingsForm.pinnedType === 'has'" v-model="settingsForm.pinned_post_id" type="number" min="0" step="1" placeholder="输入文章编号" style="flex:1" @input="settingsForm.pinned_post_id = settingsForm.pinned_post_id.replace(/[^0-9]/g, '')">
+                  </div>
+                </div>
                 <div class="form-group">
                   <label>主题风格</label>
                   <div style="display:flex;align-items:center;gap:12px">
@@ -630,6 +646,15 @@ export function getAdminHTML() {
                       <img src="/icon/friend-links.png" style="width:32px;height:32px;object-fit:cover">
                     </div>
                     <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/friend-links.png</code> 文件即可更换</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>置顶文章图标</label>
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                    <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                      <img src="/icon/pin-post.png" style="width:32px;height:32px;object-fit:cover">
+                    </div>
+                    <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/pin-post.png</code> 文件即可更换</span>
                   </div>
                 </div>
                 <div class="form-group">
@@ -768,7 +793,7 @@ export function getAdminHTML() {
         const logout = () => { localStorage.removeItem('token'); logged.value = false; };
         const loadPosts = async () => { try { const r = await api('/api/admin/posts'); posts.value = r.data; } catch (e) { showToast('加载文章失败'); } };
         const loadCategories = async () => { try { const r = await api('/api/categories'); categories.value = r.data; } catch (e) { showToast('加载分类失败'); } };
-        const loadSettings = async () => { try { const r = await api('/api/settings'); settingsForm.value = { site_name: r.data.site_name || '', site_description: r.data.site_description || '', site_favicon: r.data.site_favicon || '', site_avatar: r.data.site_avatar || '', site_bio: r.data.site_bio || '', site_links: r.data.site_links || '', site_author: r.data.site_author || '', site_footer: r.data.site_footer || '', custom_js: r.data.custom_js || '', site_theme: r.data.site_theme || 'animal-forest', allow_robots: r.data.allow_robots || '1', enable_compression: r.data.enable_compression || '1', links_title: r.data.links_title || '友链', site_created_at: r.data.site_created_at || '2020-02-02', site_password: r.data.site_password || '', allowed_origins: r.data.allowed_origins || '*', category_icon: r.data.category_icon || '📂', links_icon: r.data.links_icon || '🔗', tag_cloud_icon: r.data.tag_cloud_icon || '🏷️', enable_tag_cloud: r.data.enable_tag_cloud || '1', profile_position: r.data.profile_position || 'left', tag_cloud_position: r.data.tag_cloud_position || 'left', pinned_post_id: r.data.pinned_post_id || '' }; currentPinnedId.value = r.data.pinned_post_id || ''; applyTheme(); updateFavicon(); } catch (e) { showToast('加载设置失败'); } };
+        const loadSettings = async () => { try { const r = await api('/api/settings'); const pinnedId = r.data.pinned_post_id || ''; settingsForm.value = { site_name: r.data.site_name || '', site_description: r.data.site_description || '', site_favicon: r.data.site_favicon || '', site_avatar: r.data.site_avatar || '', site_bio: r.data.site_bio || '', site_links: r.data.site_links || '', site_author: r.data.site_author || '', site_footer: r.data.site_footer || '', custom_js: r.data.custom_js || '', site_theme: r.data.site_theme || 'animal-forest', allow_robots: r.data.allow_robots || '1', enable_compression: r.data.enable_compression || '1', links_title: r.data.links_title || '友链', site_created_at: r.data.site_created_at || '2020-02-02', site_password: r.data.site_password || '', allowed_origins: r.data.allowed_origins || '*', category_icon: r.data.category_icon || '📂', links_icon: r.data.links_icon || '🔗', tag_cloud_icon: r.data.tag_cloud_icon || '🏷️', enable_tag_cloud: r.data.enable_tag_cloud || '1', profile_position: r.data.profile_position || 'left', tag_cloud_position: r.data.tag_cloud_position || 'left', pinned_post_id: pinnedId, pinnedType: pinnedId ? 'has' : '' }; currentPinnedId.value = pinnedId; applyTheme(); updateFavicon(); } catch (e) { showToast('加载设置失败'); } };
         const loadTrash = async () => { try { const r = await api('/api/admin/trash'); trashPosts.value = r.data; } catch (e) { showToast('加载回收站失败'); } };
         const showToast = (m) => { toast.value = m; setTimeout(() => toast.value = '', 2000); };
         const showConfirm = (t, m, options = {}) => new Promise(r => {
@@ -793,7 +818,7 @@ export function getAdminHTML() {
         const editCategory = (c) => { editingCategory.value = c.id; categoryForm.value = { name: c.name, slug: c.slug, description: c.description || '' }; };
         const saveCategory = async () => { if (!categoryForm.value.name || !categoryForm.value.slug) { alert('请填写'); return; } const { confirmed } = await showConfirm('确认保存', '确定？'); if (!confirmed) return; try { const d = { ...categoryForm.value }; if (editingCategory.value && editingCategory.value !== 'new') d.id = editingCategory.value; await api('/api/category', { method: 'POST', data: d }); loadCategories(); editingCategory.value = null; categoryForm.value = { name: '', slug: '', description: '' }; showToast('保存成功'); } catch (e) { alert('保存失败'); } };
         const deleteCategory = async (id) => { const { confirmed } = await showConfirm('确认删除', '确定？'); if (!confirmed) return; try { await api('/api/category?id=' + id, { method: 'DELETE' }); loadCategories(); showToast('已删除'); } catch (e) { showToast('删除分类失败'); } };
-        const saveSettings = async () => { try { const r = await api('/api/settings', { method: 'POST', data: settingsForm.value }); if (r.data && r.data.success) { showToast('保存成功'); updateFavicon(); } else { alert('保存失败: ' + (r.data ? r.data.error : '未知错误')); } } catch (e) { console.error('保存设置错误:', e); alert('保存失败: ' + (e.response ? e.response.data.error || e.response.statusText : e.message)); } };
+        const saveSettings = async () => { if (settingsForm.value.pinnedType === 'has' && !settingsForm.value.pinned_post_id) { alert('请输入置顶文章编号'); return; } try { const data = { ...settingsForm.value }; if (data.pinnedType !== 'has') { data.pinned_post_id = ''; } delete data.pinnedType; const r = await api('/api/settings', { method: 'POST', data: data }); if (r.data && r.data.success) { showToast('保存成功'); updateFavicon(); } else { alert('保存失败: ' + (r.data ? r.data.error : '未知错误')); } } catch (e) { console.error('保存设置错误:', e); alert('保存失败: ' + (e.response ? e.response.data.error || e.response.statusText : e.message)); } };
         const handleCoverChange = async (e) => { const f = e.target.files[0]; if (f) await uploadFile(f); };
         const handleCoverDrop = async (e) => { const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) await uploadFile(f); };
         const handleDrop = async (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) await uploadFile(f); };
