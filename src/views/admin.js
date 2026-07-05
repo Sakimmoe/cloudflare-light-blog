@@ -47,8 +47,8 @@ export function getAdminHTML() {
     .btn-cancel:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c4b89e; }
     .btn-back { background: linear-gradient(135deg, #7DC395, #5BAF7A); color: #fff; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 0 0 #4a9a68; padding: 8px 20px; font-size: 14px; }
     .btn-back:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #4a9a68; }
-    .btn-import { background: #e18c6f; box-shadow: 0 4px 0 0 #c47a5e; }
-    .btn-import:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #c47a5e; }
+    .btn-import { background: #19c8b9; box-shadow: 0 4px 0 0 #11a89b; }
+    .btn-import:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #11a89b; }
     .btn-pin { background: #FFB74D; box-shadow: 0 4px 0 0 #E8A33D; color: #fff; }
     .btn-pin:hover { transform: translateY(-1px); box-shadow: 0 5px 0 0 #E8A33D; }
     /* 美化单选按钮样式 */
@@ -125,8 +125,8 @@ export function getAdminHTML() {
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .actions { display: flex; gap: 6px; }
     .actions button { padding: 6px 14px; border: none; border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .actions .edit, .edit { background: #A5C8F0; color: #fff; box-shadow: 0 3px 0 0 #8BB0E8; }
-    .actions .edit:hover, .edit:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #8BB0E8; }
+    .actions .edit, .edit { background: #79ade9; color: #fff; box-shadow: 0 3px 0 0 #6299d4; }
+    .actions .edit:hover, .edit:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #6299d4; }
     .actions .delete, .delete { background: #fc736d; color: #fff; box-shadow: 0 3px 0 0 #e05a54; }
     .actions .delete:hover, .delete:hover { transform: translateY(-1px); box-shadow: 0 4px 0 0 #e05a54; }
     .editor-layout { display: flex; gap: 20px; align-items: stretch; }
@@ -501,21 +501,11 @@ export function getAdminHTML() {
                 <div class="form-group"><label>网站副标题</label><input v-model="settingsForm.site_description"></div>
                 <div class="form-group">
                   <label>网站图标</label>
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
                     <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                      <img v-if="settingsForm.site_favicon && (settingsForm.site_favicon.startsWith('http') || settingsForm.site_favicon.startsWith('/'))" :src="settingsForm.site_favicon" style="width:32px;height:32px;object-fit:cover">
-                      <span v-else-if="settingsForm.site_favicon" style="font-size:20px">{{settingsForm.site_favicon}}</span>
-                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                      <img src="/icon/favicon.ico" style="width:32px;height:32px;object-fit:cover">
                     </div>
-                  </div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input v-model="settingsForm.site_favicon" placeholder="输入emoji或图片地址" style="flex:1">
-                    <div @click="$refs.faviconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                      <input ref="faviconInput" type="file" @change="handleFavicon" accept=".ico,image/*" style="display:none">
-                      更换
-                    </div>
-                    <button v-if="settingsForm.site_favicon" @click="settingsForm.site_favicon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                    <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/favicon.ico</code> 文件即可更换</span>
                   </div>
                 </div>
                 <div class="form-group">
@@ -583,21 +573,11 @@ export function getAdminHTML() {
                 <div class="form-group"><label>个人名称</label><input v-model="settingsForm.site_author"></div>
                 <div class="form-group">
                   <label>个人头像</label>
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
                     <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                      <img v-if="settingsForm.site_avatar && (settingsForm.site_avatar.startsWith('http') || settingsForm.site_avatar.startsWith('/'))" :src="settingsForm.site_avatar" style="width:32px;height:32px;object-fit:cover">
-                      <span v-else-if="settingsForm.site_avatar" style="font-size:20px">{{settingsForm.site_avatar}}</span>
-                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                      <img src="/icon/profile.png" style="width:32px;height:32px;object-fit:cover">
                     </div>
-                  </div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input v-model="settingsForm.site_avatar" placeholder="输入emoji或图片地址" style="flex:1">
-                    <div @click="$refs.avatarInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                      <input ref="avatarInput" type="file" @change="handleAvatar" accept="image/*" style="display:none">
-                      更换
-                    </div>
-                    <button v-if="settingsForm.site_avatar" @click="settingsForm.site_avatar=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                    <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/profile.png</code> 文件即可更换</span>
                   </div>
                 </div>
                 <div class="form-group"><label>个人简介</label><textarea v-model="settingsForm.site_bio" rows="3"></textarea></div>
@@ -612,40 +592,20 @@ export function getAdminHTML() {
                 <h3 style="color:#794f27;font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e8e0cc">模块与图标</h3>
                 <div class="form-group">
                   <label>分类标题图标</label>
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
                     <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                      <img v-if="settingsForm.category_icon && (settingsForm.category_icon.startsWith('http') || settingsForm.category_icon.startsWith('/'))" :src="settingsForm.category_icon" style="width:32px;height:32px;object-fit:cover">
-                      <span v-else-if="settingsForm.category_icon" style="font-size:20px">{{settingsForm.category_icon}}</span>
-                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                      <img src="/icon/category.png" style="width:32px;height:32px;object-fit:cover">
                     </div>
-                  </div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input v-model="settingsForm.category_icon" placeholder="输入emoji或图片地址" style="flex:1">
-                    <div @click="$refs.categoryIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                      <input ref="categoryIconInput" type="file" @change="handleCategoryIcon" accept="image/*" style="display:none">
-                      更换
-                    </div>
-                    <button v-if="settingsForm.category_icon" @click="settingsForm.category_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                    <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/category.png</code> 文件即可更换</span>
                   </div>
                 </div>
                 <div class="form-group">
                   <label>友链标题图标</label>
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                    <span style="color:#9f927d;font-size:14px">预览：</span>
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
                     <div style="width:36px;height:36px;border:2px solid #e8e0cc;border-radius:8px;background:#f0e8d8;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                      <img v-if="settingsForm.links_icon && (settingsForm.links_icon.startsWith('http') || settingsForm.links_icon.startsWith('/'))" :src="settingsForm.links_icon" style="width:32px;height:32px;object-fit:cover">
-                      <span v-else-if="settingsForm.links_icon" style="font-size:20px">{{settingsForm.links_icon}}</span>
-                      <span v-else style="color:#9f927d;font-size:12px">无</span>
+                      <img src="/icon/friend-links.png" style="width:32px;height:32px;object-fit:cover">
                     </div>
-                  </div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input v-model="settingsForm.links_icon" placeholder="输入emoji或图片地址" style="flex:1">
-                    <div @click="$refs.linksIconInput.click()" style="padding:6px 12px;background:#19c8b9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">
-                      <input ref="linksIconInput" type="file" @change="handleLinksIcon" accept="image/*" style="display:none">
-                      更换
-                    </div>
-                    <button v-if="settingsForm.links_icon" @click="settingsForm.links_icon=''" style="padding:6px 12px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">清除</button>
+                    <span style="color:#9f927d;font-size:13px">替换 <code style="background:#f0e8d8;padding:2px 6px;border-radius:4px;font-size:12px">public/icon/friend-links.png</code> 文件即可更换</span>
                   </div>
                 </div>
                 <div class="form-group">
