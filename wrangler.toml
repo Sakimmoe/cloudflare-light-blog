@@ -17,7 +17,7 @@ serve_directly = false
 [[d1_databases]]
 binding = "DB"
 database_name = "blog-db"
-database_id = "7dc8164c-4d70-4952-9ef1-4a0fb0714186"
+database_id = "9b29e9d7-f731-4c16-b240-7d5449a31e8a"
 #database_id = "${DB_ID}"
 
 # ============================================
