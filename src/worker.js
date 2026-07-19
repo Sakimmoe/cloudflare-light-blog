@@ -1,7 +1,7 @@
 // ==================== Cloudflare Light Blog - 主入口 ====================
 // 模块化架构 | HMAC 认证 | 分页 | 缓存 | SEO
 
-import { html, errorResponse, handleOptions, getCorsHeaders } from './lib/utils.js';
+import { html, errorResponse, handleOptions, getCorsHeaders, escapeHtml } from './lib/utils.js';
 import { initDB, getSettings } from './lib/db.js';
 import { authenticateRequest, verifyPasswordHash } from './lib/auth.js';
 import { handleImage } from './lib/image.js';
@@ -90,6 +90,11 @@ export default {
         return handleImage(request, env, path);
       }
 
+      // Icon 图标
+      if (path.startsWith('/icon/')) {
+        return handleIcon(env, path);
+      }
+
       // 文章详情页
       if (path.startsWith('/post/')) {
         return handlePostPage(request, env, path, ctx);
@@ -133,14 +138,14 @@ async function deriveHMACKey(password, info) {
 /**
  * 验证文章密码 cookie
  */
-async function verifyPostAuth(cookieValue, password, postId) {
+async function verifyPostAuth(cookieValue, passwordHash, postId) {
   try {
     const parts = cookieValue.split('.');
     if (parts.length !== 2) return false;
     const timestamp = parseInt(parts[0]);
     if (isNaN(timestamp)) return false;
     if (Date.now() - timestamp > 86400000) return false;
-    const key = await deriveHMACKey(password, 'post-auth-' + postId);
+    const key = await deriveHMACKey(passwordHash, 'post-auth-' + postId);
     const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode('post_auth:' + timestamp));
     const expected = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
     return parts[1] === expected;
@@ -169,15 +174,14 @@ async function verifySiteAuth(cookieValue, password) {
  */
 function showSitePasswordPage(settings) {
   const siteName = settings.site_name || '我的博客';
-  const favicon = settings.site_favicon || '';
   return new Response(`<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>访问验证 - ${siteName}</title>
-  ${favicon ? '<link rel="icon" href="' + favicon + '">' : ''}
+  <title>访问验证 - ${escapeHtml(siteName)}</title>
+  <link rel="icon" href="/icon/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: Nunito, 'Noto Sans SC', sans-serif; background: #f8f8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
@@ -194,7 +198,7 @@ function showSitePasswordPage(settings) {
 </head>
 <body>
   <div class="box">
-    <h2>🔒 ${siteName}</h2>
+    <h2>🔒 ${escapeHtml(siteName)}</h2>
     <p>请输入访问密码</p>
     <form id="authForm">
       <input type="password" id="pwd" placeholder="请输入密码" autofocus>
@@ -256,27 +260,36 @@ Disallow: /
  * favicon.ico
  */
 async function handleFavicon(env) {
-  const settings = await getSettings(env);
-  const favicon = settings.site_favicon;
-
-  if (favicon && favicon.startsWith('/images/') && env.R2) {
-    const filename = favicon.replace('/images/', '');
-    const object = await env.R2.get(filename);
-    if (object) {
-      return new Response(object.body, {
-        headers: {
-          'Content-Type': object.httpMetadata?.contentType || 'image/x-icon',
-          'Cache-Control': 'public, max-age=86400'
-        }
-      });
-    }
+  if (!env.ASSETS) {
+    return new Response(null, { status: 204 });
   }
 
-  if (favicon && favicon.startsWith('http')) {
-    return Response.redirect(favicon, 302);
+  const response = await env.ASSETS.fetch(new Request('/favicon.ico'));
+  if (response && response.status !== 404) {
+    return response;
   }
 
   return new Response(null, { status: 204 });
+}
+
+/**
+ * Icon 图标（从静态资源读取）
+ */
+async function handleIcon(env, path) {
+  const filename = path.replace('/icon/', '');
+  
+  if (!env.ASSETS) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const assetPath = '/' + filename;
+  const response = await env.ASSETS.fetch(new Request(assetPath));
+  
+  if (!response || response.status === 404) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  return response;
 }
 
 /**
@@ -294,17 +307,17 @@ async function handlePostPage(request, env, path, ctx) {
 
   // 如果带密码参数，不缓存
   if (providedPassword) {
-    return renderPostPage(env, id, providedPassword);
+    return renderPostPage(request, env, id, providedPassword);
   }
 
   // 文章详情页不缓存（编辑后立即生效）
-  return renderPostPage(env, id, null);
+  return renderPostPage(request, env, id, null);
 }
 
 /**
  * 渲染文章详情页
  */
-async function renderPostPage(env, id, providedPassword) {
+async function renderPostPage(request, env, id, providedPassword) {
   const settings = await getSettings(env);
 
   const post = await env.DB.prepare(

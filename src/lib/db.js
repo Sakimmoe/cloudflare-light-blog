@@ -1,5 +1,7 @@
 // ==================== 数据库模块（优化初始化）====================
 
+import { hashPassword } from './auth.js';
+
 /**
  * 获取表的列信息（白名单验证防止 SQL 注入）
  */
@@ -119,7 +121,14 @@ export async function initDB(env) {
       ['site_links', ''],
       ['site_footer', '© 2026 我的博客'],
       ['custom_js', ''],
-      ['site_author', '']
+      ['site_author', ''],
+      ['category_icon', '📂'],
+      ['links_icon', '🔗'],
+      ['tag_cloud_icon', '🏷️'],
+      ['enable_tag_cloud', '1'],
+      ['profile_position', 'left'],
+      ['tag_cloud_position', 'left'],
+      ['pinned_post_id', '']
     ];
 
     // 逐条插入默认设置（避免 D1 batch 10条限制）
@@ -172,7 +181,14 @@ export async function getSettings(env) {
     site_author: '',
     site_footer: '',
     custom_js: '',
-    site_links: ''
+    site_links: '',
+    category_icon: '📂',
+    links_icon: '🔗',
+    tag_cloud_icon: '🏷️',
+    enable_tag_cloud: '1',
+    profile_position: 'left',
+    tag_cloud_position: 'left',
+    pinned_post_id: ''
   };
 
   try {
@@ -193,6 +209,15 @@ export async function getSettings(env) {
 export async function saveSettings(env, settingsObj) {
   const entries = Object.entries(settingsObj).filter(([key, value]) => value !== undefined && value !== null);
   for (const [key, value] of entries) {
-    await env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, String(value)).run();
+    // 全站密码需要哈希存储
+    if (key === 'site_password' && value && value.trim()) {
+      const hashed = await hashPassword(value);
+      await env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, hashed).run();
+    } else if (key === 'site_password') {
+      // 空密码直接存储
+      await env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, '').run();
+    } else {
+      await env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, String(value)).run();
+    }
   }
 }

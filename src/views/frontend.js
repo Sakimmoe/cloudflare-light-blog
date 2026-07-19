@@ -7,9 +7,7 @@ export function getFrontendHTML(settings) {
   const siteName = settings.site_name || '我的博客';
   const siteDesc = settings.site_description || '';
   const siteAuthor = settings.site_author || siteName;
-  const siteAvatar = settings.site_avatar || '';
   const siteBio = settings.site_bio || '';
-  const favicon = settings.site_favicon || '';
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -22,13 +20,12 @@ export function getFrontendHTML(settings) {
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="/">
   <link rel="sitemap" href="/sitemap.xml">
-  ${favicon ? `<link rel="icon" href="${escapeHtml(favicon)}">` : ''}
+  <link rel="icon" href="/icon/favicon.ico">
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="${escapeHtml(siteName)}">
   <meta property="og:description" content="${escapeHtml(siteDesc || siteName + ' - 基于 Cloudflare Workers 构建的轻量级博客')}">
   <meta property="og:site_name" content="${escapeHtml(siteName)}">
-  ${siteAvatar ? `<meta property="og:image" content="${escapeHtml(siteAvatar)}">` : ''}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -44,9 +41,9 @@ export function getFrontendHTML(settings) {
     .sidebar { width: 280px; flex-shrink: 0; }
     .post-list { flex: 1; }
     #app { display: flex; flex-direction: column; gap: 28px; }
-    .post-card { background: #f7f3df; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(107, 92, 67, 0.42); display: flex; flex-direction: row; transition: all 0.3s ease; border: 2px solid #e8e0cc; }
+    .post-card { background: #f7f3df; border-radius: 20px; overflow: visible; box-shadow: 0 4px 10px rgba(107, 92, 67, 0.42); display: flex; flex-direction: row; transition: all 0.3s ease; border: 2px solid #e8e0cc; }
     .post-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(114, 93, 66, 0.15); }
-    .post-card .post-cover { width: 220px; flex-shrink: 0; background: #e8e0cc; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .post-card .post-cover { width: 220px; flex-shrink: 0; background: #e8e0cc; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 18px 0 0 18px; }
     .post-card .post-cover img { width: 100%; height: 100%; object-fit: cover; }
     .post-card .post-content { flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; overflow: hidden; }
     .post-card h2 { font-size: 1.35em; margin-bottom: 8px; color: #794f27; font-weight: 700; }
@@ -59,7 +56,7 @@ export function getFrontendHTML(settings) {
     .profile-card .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px; display: block; border: 3px solid #c4b89e; background: #e8e0cc; }
     .profile-card .name { font-size: 1.1em; font-weight: 700; text-align: center; margin-bottom: 4px; color: #794f27; }
     .profile-card .bio { color: #725d42; font-size: 0.85em; text-align: center; margin-bottom: 14px; font-weight: 500; }
-    .profile-card .stats { display: flex; justify-content: center; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid #e8e0cc; margin-bottom: 14px; }
+    .profile-card .stats { display: flex; justify-content: center; gap: 16px; padding-bottom: 14px; }
     .profile-card .stat-item { text-align: center; }
     .profile-card .stat-num { font-size: 1.1em; font-weight: 800; color: #19c8b9; }
     .profile-card .stat-label { font-size: 0.75em; color: #9f927d; font-weight: 600; }
@@ -100,6 +97,11 @@ export function getFrontendHTML(settings) {
       .post-card .meta { font-size: 0.75em; }
       footer { padding: 20px 16px; font-size: 0.8em; }
     }
+    .tag-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      filter: brightness(0.95);
+    }
   </style>
 </head>
 <body>
@@ -110,9 +112,9 @@ export function getFrontendHTML(settings) {
     ${siteDesc ? `<p>${escapeHtml(siteDesc)}</p>` : ''}
   </header>
   <main>
-    <aside class="sidebar">
+    <aside class="sidebar" ${settings.profile_position === 'right' ? 'style="order:2"' : ''}>
       <div class="profile-card">
-        ${siteAvatar ? `<img class="avatar" src="${escapeHtml(siteAvatar)}" alt="${escapeHtml(siteAuthor)}">` : `<img class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect fill='%23e8e0cc' width='80' height='80'/%3E%3Ctext x='40' y='45' text-anchor='middle' fill='%239f927d' font-size='32'%3E?%3C/text%3E%3C/svg%3E" alt="头像">`}
+        <img class="avatar" src="/icon/profile.png" alt="${escapeHtml(siteAuthor)}">
         <div class="name">${escapeHtml(siteAuthor)}</div>
         ${siteBio ? `<div class="bio">${escapeHtml(siteBio)}</div>` : ''}
         <div class="stats">
@@ -120,17 +122,26 @@ export function getFrontendHTML(settings) {
           <div class="stat-item"><div id="stat-cats" class="stat-num">-</div><div class="stat-label">分类</div></div>
           <div class="stat-item"><div id="stat-tags" class="stat-num">-</div><div class="stat-label">标签</div></div>
         </div>
-        <div style="font-size:0.78em;color:#9f927d;margin-bottom:14px;line-height:1.8">
-          <div>建站时间：<span id="site-created">${(function(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'})(new Date(settings.site_created_at || '2020-02-02'))}</span></div>
-          <div>最后更新：<span id="site-updated">-</span></div>
+        <div style="font-size:0.78em;color:#9f927d;text-align:center;padding-bottom:14px;border-bottom:2px solid #e8e0cc;margin-bottom:14px">
+          建站时间：${(function(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'})(new Date(settings.site_created_at || '2020-02-02'))}
         </div>
-        <h4>📂 分类</h4>
+        <h4><img src="/icon/category.png" style="width:22px;height:22px;vertical-align:middle;margin-right:6px">分类</h4>
         <div id="category-list" class="category-list"></div>
-        <h4>🔗 ${escapeHtml(settings.links_title || '友链')}</h4>
+        <h4><img src="/icon/friend-links.png" style="width:22px;height:22px;vertical-align:middle;margin-right:6px">${escapeHtml(settings.links_title || '友链')}</h4>
         <div id="link-list" class="link-list"></div>
       </div>
+      ${settings.enable_tag_cloud !== '0' && settings.tag_cloud_position === 'left' ? `
+      <div class="profile-card" style="margin-top:16px">
+        <div id="tag-cloud" class="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0"></div>
+      </div>
+      ` : ''}
     </aside>
-    <div class="post-list">
+    <div class="post-list" ${settings.profile_position === 'right' ? 'style="order:1"' : ''}>
+      ${settings.enable_tag_cloud !== '0' && settings.tag_cloud_position === 'right' ? `
+      <div style="margin-bottom:16px;padding:16px;background:#f7f3df;border-radius:20px;border:2px solid #e8e0cc">
+        <div id="tag-cloud" class="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+      ` : ''}
       <div style="margin-bottom:16px">
         <input id="search-input" type="text" placeholder="搜索文章标题或标签……" style="width:100%;padding:12px 18px;border:2px solid #e8e0cc;border-radius:14px;font-size:15px;background:#f7f3df;color:#725d42;outline:none;transition:border-color 0.2s;box-shadow:0 2px 8px rgba(107,92,67,0.08)" onfocus="this.style.borderColor='#19c8b9'" onblur="this.style.borderColor='#e8e0cc'">
       </div>
@@ -160,7 +171,6 @@ export function getFrontendHTML(settings) {
       document.getElementById('stat-posts').textContent = s.postCount;
       document.getElementById('stat-cats').textContent = s.catCount;
       document.getElementById('stat-tags').textContent = s.tagCount || 0;
-      if (s.latestDate) { var d = new Date(s.latestDate); document.getElementById('site-updated').textContent = d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'; }
     });
     fetch('/api/categories').then(function(r){return r.json()}).then(function(cats){
       var list = document.getElementById('category-list');
@@ -175,9 +185,67 @@ export function getFrontendHTML(settings) {
       }
     });
 
+    // 加载标签云
+    var tagCloudEl = document.getElementById('tag-cloud');
+    if (tagCloudEl) {
+      fetch('/api/posts?limit=999').then(function(r){return r.json()}).then(function(res) {
+        var posts = res.data || [];
+        var tagMap = {};
+        posts.forEach(function(post) {
+          if (post.password) return; // 跳过有密码的文章
+          if (post.tags) {
+            post.tags.split(',').forEach(function(t) {
+              var tag = t.trim();
+              if (tag) {
+                tagMap[tag] = (tagMap[tag] || 0) + 1;
+              }
+            });
+          }
+        });
+        var tags = Object.keys(tagMap).slice(0, 18); // 最多18个标签
+        if (tags.length > 0) {
+          var colors = [
+            { bg: '#f8a6b2', color: '#fff', border: '#f8a6b2' },  // app-pink
+            { bg: '#b77dee', color: '#fff', border: '#b77dee' },  // purple
+            { bg: '#889df0', color: '#fff', border: '#889df0' },  // app-blue
+            { bg: 'rgb(247,243,223)', color: '#725d42', border: '#e8dcc8' },  // default
+            { bg: '#e59266', color: '#fff', border: '#e59266' },  // app-orange
+            { bg: '#82d5bb', color: '#fff', border: '#82d5bb' },  // app-teal
+            { bg: '#8ac68a', color: '#fff', border: '#8ac68a' },  // app-green
+            { bg: '#fc736d', color: '#fff', border: '#fc736d' },  // app-red
+            { bg: '#e18c6f', color: '#fff', border: '#e18c6f' }   // warm-peach-pink
+          ];
+          // 颜色分配：最多2个标签同色
+          var colorCount = {};
+          var shuffled = colors.slice().sort(function(){return 0.5 - Math.random()});
+          var colorIndex = 0;
+          tagCloudEl.innerHTML = tags.map(function(tag) {
+            // 找一个使用次数<2的颜色
+            while (colorIndex < shuffled.length * 2) {
+              var c = shuffled[colorIndex % shuffled.length];
+              var key = c.bg;
+              if (!colorCount[key]) colorCount[key] = 0;
+              if (colorCount[key] < 2) {
+                colorCount[key]++;
+                colorIndex++;
+                return '<a href="/?tag=' + encodeURIComponent(tag) + '" class="tag-item" style="display:inline-block;padding:5px 14px;background:' + c.bg + ';color:' + c.color + ';border:1.5px solid ' + c.border + ';border-radius:50px;text-decoration:none;white-space:nowrap;font-size:13px;font-weight:600;transition:all 0.25s ease;cursor:pointer">' + tag + '</a>';
+              }
+              colorIndex++;
+            }
+            // fallback
+            var c = shuffled[0];
+            return '<a href="/?tag=' + encodeURIComponent(tag) + '" class="tag-item" style="display:inline-block;padding:5px 14px;background:' + c.bg + ';color:' + c.color + ';border:1.5px solid ' + c.border + ';border-radius:50px;text-decoration:none;white-space:nowrap;font-size:13px;font-weight:600;transition:all 0.25s ease;cursor:pointer">' + tag + '</a>';
+          }).join('');
+        } else {
+          tagCloudEl.innerHTML = '<span style="color:#9f927d;font-size:0.85em">暂无标签</span>';
+        }
+      });
+    }
+
     // 加载文章列表（支持分页）
     var currentPage = parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
     var currentCategory = new URLSearchParams(window.location.search).get('category');
+    var currentTag = new URLSearchParams(window.location.search).get('tag');
 
     function loadPosts(page) {
       page = page || 1;
@@ -186,9 +254,19 @@ export function getFrontendHTML(settings) {
 
       fetch(apiUrl).then(function(r){return r.json()}).then(function(res) {
         var posts = res.data || [];
+        var pinned_post_id = res.pinned_post_id || '';
         var pagination = res.pagination || {};
         var app = document.getElementById('app');
         var html = '';
+
+        // 将置顶文章移到列表最前面
+        if (pinned_post_id && page === 1) {
+          var pinnedIndex = posts.findIndex(function(p) { return String(p.id) === String(pinned_post_id); });
+          if (pinnedIndex > 0) {
+            var pinnedPost = posts.splice(pinnedIndex, 1)[0];
+            posts.unshift(pinnedPost);
+          }
+        }
 
         if (currentCategory) {
           html += '<div style="margin-bottom:16px"><a href="/" style="display:inline-block;padding:8px 20px;background:#19c8b9;color:#fff;text-decoration:none;border-radius:50px;font-weight:600;font-size:0.9em;box-shadow:0 4px 0 0 #11a89b">← 返回首页</a> <span id="current-cat" style="color:#794f27;font-weight:600;margin-left:8px"></span></div>';
@@ -199,6 +277,15 @@ export function getFrontendHTML(settings) {
           });
         }
 
+        if (currentTag) {
+          // 标签筛选：前端过滤
+          posts = posts.filter(function(post) {
+            if (post.password) return false;
+            return post.tags && post.tags.split(',').map(function(t){return t.trim()}).indexOf(currentTag) >= 0;
+          });
+          html += '<div style="margin-bottom:16px"><a href="/" style="display:inline-block;padding:8px 20px;background:#19c8b9;color:#fff;text-decoration:none;border-radius:50px;font-weight:600;font-size:0.9em;box-shadow:0 4px 0 0 #11a89b">← 返回首页</a> <span style="color:#794f27;font-weight:600;margin-left:8px">标签：' + currentTag + '</span></div>';
+        }
+
         if (!posts || posts.length === 0) {
           app.innerHTML = html + '<p style="text-align:center;color:#9f927d;">暂无文章</p>';
           return;
@@ -206,21 +293,24 @@ export function getFrontendHTML(settings) {
 
         var formatDate = function(d) { var dt = new Date(d); return dt.getFullYear() + String(dt.getMonth()+1).padStart(2,'0'); };
         html += posts.map(function(post) {
+          var isPinned = String(post.id) === String(pinned_post_id);
           var cover = post.cover_image ? '<img src="' + post.cover_image + '" alt="' + post.title + '" loading="lazy">' : '<span style="color:#9f927d">封面</span>';
           var tags = post.tags ? post.tags.split(',').map(function(t) {
-            return '<span style="display:inline-block;padding:3px 10px;background:#e6f5f0;color:#3a7a6a;font-size:0.72em;font-weight:700;margin-right:8px;border:1px solid #b8ddd0;border-radius:4px;box-shadow:1px 2px 3px rgba(58,122,106,0.12)">' + t.trim() + '</span>';
+            return '<span style="display:inline-block;padding:3px 10px;background:#e6f9f6;color:#11a89b;font-size:0.72em;font-weight:700;margin-right:6px;border:1.5px solid #19c8b9;border-radius:50px">' + t.trim() + '</span>';
           }).join('') : '';
           function stripHtml(str) { return str ? str.split('<').join('').split('>').join('').split('&lt;').join('<').split('&gt;').join('>').split('&amp;').join('&').substring(0, 80) : ''; }
           var rawText = post.excerpt || post.content || '';
           var excerpt = post.password ? '🔒 该文章受到密码保护' : stripHtml(rawText) + (rawText.length > 80 ? '...' : '');
-          return '<article class="post-card">' +
+          var pinBadge = isPinned ? '<img src="/icon/pin-post.png" style="position:absolute;top:12px;right:12px;width:28px;height:28px;z-index:1">' : '';
+          return '<article class="post-card" style="position:relative' + (isPinned ? ';border:2px solid #ffd700;box-shadow:0 4px 16px rgba(255,215,0,0.3)' : '') + '">' +
             '<div class="post-cover">' + cover + '</div>' +
+            pinBadge +
             '<div class="post-content">' +
               '<h2><a href="/post/' + formatDate(post.created_at) + '/' + post.id + '">' + post.title + '</a></h2>' +
               '<p style="color:#725d42;font-size:0.9em;line-height:1.7;margin:8px 0">' + excerpt + '</p>' +
               (tags ? '<div style="margin:8px 0 0">' + tags + '</div>' : '') +
               '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">' +
-                '<div class="meta"><span>📂 ' + post.category + '</span><span>' + (function(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'})(new Date(post.created_at)) + '</span></div>' +
+                '<div class="meta"><span><img src="/icon/category.png" style="width:16px;height:16px;vertical-align:middle;margin-right:4px">' + post.category + '</span><span>' + (function(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'})(new Date(post.created_at)) + '</span></div>' +
                 '<a class="read-more" href="/post/' + formatDate(post.created_at) + '/' + post.id + '">阅读更多</a>' +
               '</div>' +
             '</div>' +
